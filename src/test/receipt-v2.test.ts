@@ -7,7 +7,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import {
   compensateRepositoryPatch, compensateRepositoryPatchWithReceipt, createApprovalRequest, executeApprovedTransaction,
-  getTransactionStatus, prepareRepositoryPatch, signingProviderFromPrivateKeyPem, verifyReceipt,
+  getTransactionStatus, prepareRepositoryPatch, reconcileRepositoryPatch, signingProviderFromPrivateKeyPem, verifyReceipt,
 } from "../portable-sdk.js";
 import { RepositoryPatchAgentProof } from "../repository-patch-service.js";
 import { createDevelopmentApprovalDecision, createDevelopmentKeyPair } from "../portable-sdk.js";
@@ -119,4 +119,28 @@ test("missing or mismatched durable, requested and predecessor correlations fail
   const successorPayload={...y.receipt.payload,receiptId:crypto.randomUUID(),predecessorPayloadDigest:fakePredecessor.proof.payloadDigest};
   const successor=await signReceiptV2(successorPayload,y.signer);
   assert.equal(verifyReceipt({document:successor,trustedSignerFingerprints:[y.receiptKey.fingerprint],predecessorChain:[fakePredecessor]}).reason,"broken_predecessor_chain");
+});
+
+test("unsigned compensation cannot mutate after a signed receipt", async () => {
+  const x = await issued();
+  await assert.rejects(
+    compensateRepositoryPatch({ stateDirectory: x.state, transactionId: x.prepared.transactionId, correlationId: x.prepared.correlationId }),
+    (error: unknown) => (error as { code?: string }).code === "signed_successor_required",
+  );
+  assert.equal(await readFile(path.join(x.repo, "a.txt"), "utf8"), "after\n");
+});
+
+test("public reconciliation is correlation-bound and idempotently returns the durable receipt", async () => {
+  const x = await issued();
+  await assert.rejects(
+    reconcileRepositoryPatch({ stateDirectory: x.state, transactionId: x.prepared.transactionId, correlationId: "wrong", authorityEnvironment: "development" }, { receiptSigner: x.signer }),
+    (error: unknown) => (error as { code?: string }).code === "correlation_mismatch",
+  );
+  await assert.rejects(
+    reconcileRepositoryPatch({ stateDirectory: x.state, transactionId: x.prepared.transactionId, correlationId: x.prepared.correlationId, authorityEnvironment: "production" }, { receiptSigner: x.signer }),
+    (error: unknown) => (error as { code?: string }).code === "authority_environment_mismatch",
+  );
+  const reconciled = await reconcileRepositoryPatch({ stateDirectory: x.state, transactionId: x.prepared.transactionId, correlationId: x.prepared.correlationId, authorityEnvironment: "development" }, { receiptSigner: x.signer });
+  assert.ok("payload" in reconciled);
+  assert.equal(reconciled.proof.payloadDigest, x.receipt.proof.payloadDigest);
 });

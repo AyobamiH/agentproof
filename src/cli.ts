@@ -12,12 +12,12 @@ import {
   type SignedReceiptDocument,
 } from "./portable-protocol.js";
 import {
-  compensateRepositoryPatch,
   compensateRepositoryPatchWithReceipt,
   createApprovalRequest,
   executeApprovedTransaction,
   getTransactionStatus,
   prepareRepositoryPatch,
+  reconcileRepositoryPatch,
   signingProviderFromPrivateKeyPem,
   verifyReceipt,
 } from "./portable-sdk.js";
@@ -59,8 +59,9 @@ Commands:
   agentproof approval-request --input <prepared> --expires-at <ISO> --nonce <value>
   agentproof execute --input <execution-request> --receipt-key <private-key.pem> [--receipt-key-id <id>]
   agentproof status --input <status-query>
+  agentproof reconcile --input <reconciliation-query> --receipt-key <private-key.pem> [--receipt-key-id <id>]
   agentproof verify-receipt --input <signed-receipt> --trust-fingerprint <sha256:...> [--required-authority-environment development|production]
-  agentproof compensate --input <status-query> [--receipt-key <private-key.pem> --trust-fingerprint <sha256:...> --authority-environment development|production]
+  agentproof compensate --input <status-query> --receipt-key <private-key.pem> --trust-fingerprint <sha256:...> --authority-environment development|production
 
 All commands are non-interactive. JSON results go to stdout; diagnostics go to stderr.
 `);
@@ -97,6 +98,14 @@ async function main(): Promise<void> {
     print(await getTransactionStatus(query));
     return;
   }
+  if (args[0] === "reconcile") {
+    const keyPath = option("--receipt-key");
+    if (!keyPath) throw new AgentProofPortableError("receipt_key_required", "--receipt-key is required.", EXIT_CODES.invalidInput);
+    const query = await inputDocument<{ stateDirectory: string; transactionId: string; correlationId: string; authorityEnvironment: "development" | "production" }>();
+    if (query.authorityEnvironment !== "development" && query.authorityEnvironment !== "production") throw new AgentProofPortableError("authority_environment_required", "authorityEnvironment must be development or production.", EXIT_CODES.invalidInput);
+    print(await reconcileRepositoryPatch(query, { receiptSigner: signingProviderFromPrivateKeyPem(option("--receipt-key-id") ?? "agentproof-development-receipt", await readFile(keyPath, "utf8")) }));
+    return;
+  }
   if (args[0] === "verify-receipt") {
     const fingerprint = option("--trust-fingerprint");
     if (!fingerprint) throw new AgentProofPortableError("trust_fingerprint_required", "--trust-fingerprint is required.", EXIT_CODES.invalidInput);
@@ -114,15 +123,13 @@ async function main(): Promise<void> {
     const query = await inputDocument<{ stateDirectory: string; transactionId: string; correlationId: string }>();
     if (!query.correlationId) throw new AgentProofPortableError("correlation_required", "correlationId is required.", EXIT_CODES.invalidInput);
     const keyPath = option("--receipt-key");
-    if (keyPath) {
-      const fingerprint = option("--trust-fingerprint");
-      const environment = option("--authority-environment");
-      if (!fingerprint || (environment !== "development" && environment !== "production")) throw new AgentProofPortableError("successor_options_required", "--trust-fingerprint and --authority-environment are required with --receipt-key.", EXIT_CODES.invalidInput);
-      print(await compensateRepositoryPatchWithReceipt({ ...query, authorityEnvironment: environment }, {
-        receiptSigner: signingProviderFromPrivateKeyPem(option("--receipt-key-id") ?? "agentproof-development-receipt", await readFile(keyPath, "utf8")),
-        trustedSignerFingerprints: [fingerprint],
-      }));
-    } else print(await compensateRepositoryPatch(query));
+    const fingerprint = option("--trust-fingerprint");
+    const environment = option("--authority-environment");
+    if (!keyPath || !fingerprint || (environment !== "development" && environment !== "production")) throw new AgentProofPortableError("successor_options_required", "--receipt-key, --trust-fingerprint and --authority-environment are required.", EXIT_CODES.invalidInput);
+    print(await compensateRepositoryPatchWithReceipt({ ...query, authorityEnvironment: environment }, {
+      receiptSigner: signingProviderFromPrivateKeyPem(option("--receipt-key-id") ?? "agentproof-development-receipt", await readFile(keyPath, "utf8")),
+      trustedSignerFingerprints: [fingerprint],
+    }));
     return;
   }
   throw new AgentProofPortableError("unknown_command", `Unknown command: ${args.join(" ")}`, EXIT_CODES.invalidInput);

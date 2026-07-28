@@ -2,6 +2,9 @@
 
 ## 0.1.0-rc.5
 
+- Closed the unsigned post-receipt compensation path and exposed correlation-bound public reconciliation for interrupted executions.
+- Development-authority JSON input now rejects duplicate keys.
+
 AgentProof is now rooted in its standalone product repository. RC5 preserves the RC4 repository-patch action, public CLI/SDK, Receipt V2, authority model, state machine, schemas, fixtures, and Apache-2.0 licence.
 
 - Makes the standalone repository the intended canonical portable-product boundary.

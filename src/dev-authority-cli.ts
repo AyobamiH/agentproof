@@ -9,6 +9,7 @@ import {
   type PortableApprovalRequestDocument,
 } from "./portable-protocol.js";
 import { createDevelopmentApprovalDecision, createDevelopmentKeyPair } from "./portable-sdk.js";
+import { parseJsonStrict } from "./strict-json.js";
 
 const args = process.argv.slice(2);
 const option = (name: string) => {
@@ -28,7 +29,7 @@ async function readInput<T>(): Promise<T> {
       process.stdin.on("end", () => resolve(value));
     })
     : await readFile(source, "utf8");
-  return JSON.parse(raw) as T;
+  return parseJsonStrict(raw) as T;
 }
 
 async function main() {

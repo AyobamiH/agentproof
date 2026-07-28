@@ -25,7 +25,7 @@ The lifecycle is:
 
 ```text
 prepare repository-patch → approval-request → development keygen/decide
-→ execute → status → verify-receipt → compensate
+→ execute → status/reconcile → verify-receipt → compensate
 ```
 
 The primary CLI has no force, skip-approval, or auto-approval option. The separate development-authority binary requires explicit `--development`.
@@ -40,12 +40,13 @@ import {
   createApprovalRequest,
   executeApprovedTransaction,
   getTransactionStatus,
+  reconcileRepositoryPatch,
   compensateRepositoryPatchWithReceipt,
   verifyReceipt,
 } from "@openclaw/agentproof";
 ```
 
-Every operation receives an explicit absolute state directory. Imports perform no network calls, filesystem discovery, environment scanning, or background startup. See [Verified repository patch v1](docs/actions/repository-patch-v1.md) and [Signed receipt V2](docs/protocols/signed-receipt-v2.md).
+Every operation receives an explicit absolute state directory. `reconcileRepositoryPatch` re-observes an interrupted execution and signs only after verified state; compensation after a receipt requires an authenticated successor receipt. Imports perform no network calls, filesystem discovery, environment scanning, or background startup. See [Verified repository patch v1](docs/actions/repository-patch-v1.md) and [Signed receipt V2](docs/protocols/signed-receipt-v2.md).
 
 ## Verify a receipt offline
 

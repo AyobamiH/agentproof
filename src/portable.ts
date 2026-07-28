@@ -1,4 +1,4 @@
-export { canonicalDocumentDigest, compensateRepositoryPatch, compensateRepositoryPatchWithReceipt, createApprovalRequest, executeApprovedTransaction, getTransactionStatus, prepareRepositoryPatch, signingProviderFromPrivateKeyPem, verifyReceipt } from "./portable-sdk.js";
+export { canonicalDocumentDigest, compensateRepositoryPatch, compensateRepositoryPatchWithReceipt, createApprovalRequest, executeApprovedTransaction, getTransactionStatus, prepareRepositoryPatch, reconcileRepositoryPatch, signingProviderFromPrivateKeyPem, verifyReceipt } from "./portable-sdk.js";
 export { AgentProofPortableError, EXIT_CODES, PORTABLE_PROTOCOL_VERSION, REPOSITORY_PATCH_ACTION } from "./portable-protocol.js";
 export type { AgentProofErrorDocument, ExecutionRequestDocument, PortableApprovalDecisionDocument, PortableApprovalRequestDocument, PreparedRepositoryPatchDocument, ReceiptVerificationResultDocument, RepositoryPatchRequestDocument, SignedReceiptDocument, TransactionStatusDocument } from "./portable-protocol.js";
 export type { RepositoryPatchAction, RepositoryPatchOperation, RepositoryPatchPolicy, VerificationCommand } from "./repository-patch-types.js";

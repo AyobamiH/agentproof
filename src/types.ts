@@ -61,6 +61,7 @@ export interface Approval {
   operatorDecisionId: string;
   approvedFromTaskId: string;
   approvalDecisionDigest: string;
+  authorityEnvironment?: "development" | "production";
   scope: "single_transaction";
 }
 

@@ -235,6 +235,7 @@ function validateApproval(
     originalTaskId: decision.requestDigest, operatorApprovalTaskId: decision.requestDigest,
     operatorDecisionId: `approval-decision:${digest(unsigned)}`,
     approvedFromTaskId: decision.requestDigest, approvalDecisionDigest: digest(unsigned),
+    authorityEnvironment: decision.authorityEnvironment,
     scope: "single_transaction",
   };
 }
@@ -309,6 +310,38 @@ export function verifyReceipt(args: {
   return verifyReceiptV2(args);
 }
 
+export async function reconcileRepositoryPatch(args: {
+  stateDirectory: string;
+  transactionId: string;
+  correlationId: string;
+  authorityEnvironment: "development" | "production";
+}, options: { receiptSigner: SigningProvider; signal?: AbortSignal }): Promise<SignedReceiptV2 | TransactionStatusDocument> {
+  checkAbort(options.signal);
+  const agentProof = service(args.stateDirectory);
+  let transaction = await agentProof.store.get(args.transactionId);
+  if (!transaction.correlationId || transaction.correlationId !== args.correlationId) {
+    throw new AgentProofPortableError("correlation_mismatch", "Reconciliation correlation does not match durable transaction state.", EXIT_CODES.invalidInput);
+  }
+  const existing = await agentProof.store.portableReceiptChain(args.transactionId);
+  if (transaction.approval?.authorityEnvironment !== args.authorityEnvironment) {
+    throw new AgentProofPortableError("authority_environment_mismatch", "Reconciliation authority environment does not match consumed approval.", EXIT_CODES.staleOrAlteredApproval);
+  }
+  if (existing.length > 0) return existing.at(-1)!;
+  if (transaction.state === "executing" || transaction.state === "executed" || transaction.state === "partially_executed") {
+    transaction = await agentProof.verify(args.transactionId);
+  }
+  checkAbort(options.signal);
+  if (transaction.state !== "verified") {
+    return getTransactionStatus({ stateDirectory: args.stateDirectory, transactionId: args.transactionId, correlationId: args.correlationId, signal: options.signal });
+  }
+  const receipt = await signReceiptV2(buildReceiptPayloadV2({
+    transaction, correlationId: args.correlationId, authorityEnvironment: args.authorityEnvironment,
+    preparedActionDigest: digest(transaction.prepared), signingPolicyId: await options.receiptSigner.keyId(), predecessorPayloadDigest: null,
+  }), options.receiptSigner);
+  await agentProof.store.appendPortableReceipt(receipt);
+  return receipt;
+}
+
 export async function compensateRepositoryPatchWithReceipt(args: {
   stateDirectory: string; transactionId: string; correlationId: string;
   authorityEnvironment: "development" | "production";
@@ -320,6 +353,9 @@ export async function compensateRepositoryPatchWithReceipt(args: {
     throw new AgentProofPortableError("correlation_mismatch", "Compensation correlation does not match durable transaction state.", EXIT_CODES.compensationFailure);
   }
   const chain = await agentProof.store.portableReceiptChain(args.transactionId);
+  if (stored.approval?.authorityEnvironment !== args.authorityEnvironment) {
+    throw new AgentProofPortableError("authority_environment_mismatch", "Compensation authority environment does not match consumed approval.", EXIT_CODES.compensationFailure);
+  }
   if (chain.length === 0) throw new AgentProofPortableError("predecessor_receipt_required", "A verified predecessor receipt is required.", EXIT_CODES.compensationFailure);
   const latest = chain.at(-1)!;
   if (latest.payload.correlationId !== stored.correlationId) {
@@ -345,7 +381,16 @@ export async function compensateRepositoryPatch(args: {
   signal?: AbortSignal;
 }): Promise<TransactionStatusDocument> {
   checkAbort(args.signal);
-  const transaction = await service(args.stateDirectory).compensate(args.transactionId);
+  const agentProof = service(args.stateDirectory);
+  const stored = await agentProof.store.get(args.transactionId);
+  if (!stored.correlationId || stored.correlationId !== args.correlationId) {
+    throw new AgentProofPortableError("correlation_mismatch", "Compensation correlation does not match durable transaction state.", EXIT_CODES.compensationFailure);
+  }
+  const chain = await agentProof.store.portableReceiptChain(args.transactionId);
+  if (chain.length > 0) {
+    throw new AgentProofPortableError("signed_successor_required", "A signed receipt exists; compensation must produce an authenticated successor receipt.", EXIT_CODES.compensationFailure);
+  }
+  const transaction = await agentProof.compensate(args.transactionId);
   if (transaction.state !== "compensated") {
     throw new AgentProofPortableError("compensation_failed", transaction.lastError ?? "Compensation failed.", EXIT_CODES.compensationFailure);
   }

@@ -18,7 +18,7 @@ See [Signed receipt V2](docs/protocols/signed-receipt-v2.md) for canonicalizatio
 
 Development approvals carry `authorityEnvironment: development` and fail when execution requires production authority. Never describe or use the development adapter as production security.
 
-Processes run under the same operating-system account in RC5, so OS-level compromise can cross process boundaries. Filesystem mutation and SQLite cannot form a distributed atomic commit; reconciliation observes resulting state deterministically. The package performs no network access, starts no background service, and scans no environment variables during import.
+Processes run under the same operating-system account in RC5, so OS-level compromise can cross process boundaries. Filesystem mutation and SQLite cannot form a distributed atomic commit; reconciliation observes resulting state deterministically. Package code performs no network access, starts no background service, and scans no environment variables during import. User-approved verification commands are external executables and are not an operating-system network sandbox; policies must allowlist them accordingly.
 
 The supported action rejects dirty or wrong repositories, detached heads, symlinks, submodules, path escapes, `.git` writes, undeclared changes, before-state drift, secret-bearing paths/content, altered approvals, replay, and untrusted signers. It does not commit, push, tag, deploy, or mutate remotes.
 
