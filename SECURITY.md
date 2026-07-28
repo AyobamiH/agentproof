@@ -1,18 +1,12 @@
-# AgentProof portable preview security
+# AgentProof security
 
-## RC2 signed receipt boundary
+AgentProof proves that an exact approved repository-patch document was claimed once, applied through a separate executor, independently observed, and bound into a signed receipt. It does not prove that the proposer is benevolent, verification commands are complete, the operating-system account is uncompromised, or a development key is production authority.
 
-RC1 receipts are legacy unbound documents and can never be trusted by the RC2
-verifier. V2 has only `payload` and `proof`: every returned identity and policy
-claim comes from the signed payload. The verifier strictly validates the
-complete structure, recomputes the domain-separated payload digest, enforces
-Ed25519, derives the key fingerprint, applies explicit trust and authority
-policy, reconstructs approval-binding consistency, and validates authenticated
-predecessor chains before returning `trusted: true`.
+## Receipt V2
 
-See `docs/receipt-v2-migration.md` for canonicalization and migration semantics.
+RC1 receipts are legacy unbound documents and can never be trusted by the V2 verifier. V2 has only `payload` and `proof`: every returned identity and policy claim comes from the signed payload. The verifier strictly validates the complete structure, recomputes the domain-separated payload digest, enforces Ed25519, derives the key fingerprint, applies explicit trust/authority policy, reconstructs approval-binding consistency, and validates authenticated predecessor chains before returning `trusted: true`.
 
-AgentProof proves that an exact approved repository-patch document was claimed once, applied through a separate executor, independently observed, and bound into a signed receipt. It does not prove that the proposer is benevolent, that verification commands are complete, that the operating-system account is uncompromised, or that a development key is production-grade authority.
+See [Signed receipt V2](docs/protocols/signed-receipt-v2.md) for canonicalization and migration semantics.
 
 ## Trust boundaries
 
@@ -24,6 +18,10 @@ AgentProof proves that an exact approved repository-patch document was claimed o
 
 Development approvals carry `authorityEnvironment: development` and fail when execution requires production authority. Never describe or use the development adapter as production security.
 
-V1 processes run under the same operating-system account, so OS-level compromise can cross process boundaries. Operator and AgentProof state reconcile deterministically; they do not use a distributed atomic commit. The package performs no network access, starts no background service, and scans no environment variables during import.
+Processes run under the same operating-system account in RC5, so OS-level compromise can cross process boundaries. Filesystem mutation and SQLite cannot form a distributed atomic commit; reconciliation observes resulting state deterministically. The package performs no network access, starts no background service, and scans no environment variables during import.
 
-Verify receipts offline with the CLI or `verifyReceipt`, always supplying trusted signer fingerprints out of band.
+The supported action rejects dirty or wrong repositories, detached heads, symlinks, submodules, path escapes, `.git` writes, undeclared changes, before-state drift, secret-bearing paths/content, altered approvals, replay, and untrusted signers. It does not commit, push, tag, deploy, or mutate remotes.
+
+## Reporting
+
+Do not include credentials, private keys, production data, or exploitable public details in a report. Until a public security channel is established, use the future repository’s private vulnerability-reporting mechanism after publication. Before publication, report privately to the repository owner. Do not open a public issue for an unpatched vulnerability.

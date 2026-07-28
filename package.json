@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/agentproof",
-  "version": "0.1.0-rc.4",
+  "version": "0.1.0-rc.5",
   "description": "Evidence-first authorization, exactly-once execution, independent verification, compensation, and signed receipts for consequential coding-agent actions.",
   "type": "module",
   "main": "dist/portable.js",
@@ -59,7 +59,9 @@
     "schemas/*.json",
     "fixtures/*.json",
     "migrations/*.sql",
-    "docs/*.md",
+    "docs/**/*.md",
+    "AGENTS.md",
+    "CONTRIBUTING.md",
     "CHANGELOG.md",
     "README.md",
     "SECURITY.md",
@@ -70,15 +72,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AyobamiH/openclaw-operator.git",
-    "directory": "agentproof"
+    "url": "git+https://github.com/AyobamiH/agentproof.git"
   },
   "bugs": {
-    "url": "https://github.com/AyobamiH/openclaw-operator/issues"
+    "url": "https://github.com/AyobamiH/agentproof/issues"
   },
   "publishConfig": {
     "access": "public",
     "tag": "next"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/AyobamiH/agentproof#readme"
 }

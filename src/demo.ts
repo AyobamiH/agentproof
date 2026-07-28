@@ -5,11 +5,10 @@ import { approvalFromOperatorReplay, createOperatorApprovalRequest, operatorDeci
 import { AgentProof } from "./service.js";
 import { Ed25519SigningProvider, verifySignedReceiptOffline } from "./signer.js";
 
-const operatorRoot = path.resolve(import.meta.dirname, "..", "..");
+const operatorRoot = path.resolve(import.meta.dirname, "..");
 const target = "tmp/agentproof-demo/managed.txt";
 const isolatedStateRoot = await mkdtemp(path.join(os.tmpdir(), "agentproof-demo-state-"));
-const cliPath = process.env.CODING_AGENT_SKILLS_CLI ??
-  "/home/oneclickwebsitedesignfactory/coding-agent-skills/bin/coding-agent-skills";
+const cliPath = process.env.CODING_AGENT_SKILLS_CLI ?? "coding-agent-skills";
 await mkdir(path.join(operatorRoot, "tmp", "agentproof-demo"), { recursive: true });
 
 const agentProof = new AgentProof({

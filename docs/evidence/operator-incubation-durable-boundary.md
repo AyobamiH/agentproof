@@ -1,4 +1,6 @@
-# Durable authority and signed-receipt boundary
+# Operator-incubation durable boundary
+
+> Historical Operator-incubation implementation report, retained only as design evidence. It does not describe the RC5 public API, state path, CLI, or trust decision. Current authority is [`../ARCHITECTURE.md`](../ARCHITECTURE.md), [`../TRUST-MODEL.md`](../TRUST-MODEL.md), and [`../../SECURITY.md`](../../SECURITY.md). RC5 callers provide an explicit absolute state directory, and trusted receipt verification requires an out-of-band pinned signer fingerprint.
 
 ## Status
 
@@ -7,7 +9,7 @@ Implemented locally. The migration is prepared in
 against temporary test and demonstration databases. It has not been applied to
 the live Operator database or the established production state root.
 
-## State placement
+## Historical incubation state placement
 
 AgentProof resolves mutable state from `OPENCLAW_OPERATOR_STATE_DIR` and uses:
 
@@ -33,7 +35,7 @@ the demo provide isolated temporary roots.
 The current operating-system user is still the filesystem security principal;
 process separation is a trust and capability boundary, not yet an OS sandbox.
 
-## Operator approval adapter
+## Historical Operator approval adapter
 
 `createOperatorApprovalRequest` produces a normal Operator approval task
 payload with `requiresApproval: true`. `approvalFromOperatorReplay` consumes
@@ -74,7 +76,7 @@ consumption, and receipt identity enforce replay protection.
 - `verified` without a receipt: retry signing and atomic receipt persistence;
 - unavailable signer: retain `verified` state and retry on reconciliation.
 
-## Offline verification
+## Historical signature-only verification helper
 
 Library:
 
@@ -84,6 +86,4 @@ Command:
 
 `npm --prefix agentproof run verify-receipt -- /path/to/signed-receipt.json`
 
-The command returns exit code 0 only for a valid Ed25519 signature. The receipt
-contains the public key, not private key material. Trusting that key identity is
-a separate deployment policy decision.
+This historical helper checked signature validity only and did not establish trust. RC5 trust decisions use `verifyReceipt` or the portable CLI with an explicitly pinned signer fingerprint, as required by current SECURITY.md.

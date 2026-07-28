@@ -26,7 +26,7 @@ The signed `agentproof.repository-patch.receipt.v1` contains Operator authority 
 
 ## Unsupported
 
-Commits, pushes, tags, branch deletion, remote operations, shell command strings, submodules, symlinks, arbitrary untracked-file changes, and modification of real project repositories are unsupported.
+Commits, pushes, tags, branch deletion, remote operations, shell command strings, submodules, symlinks, and arbitrary undeclared untracked-file changes are unsupported. V1 may mutate an explicitly targeted real local repository only after its clean base, branch, paths, prepared bytes, and development or production authority requirements pass. The demos and tests use disposable repositories; no running-service activation is included.
 
 ## Local harness
 
