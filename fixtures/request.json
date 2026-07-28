@@ -1,0 +1,34 @@
+{
+  "schema": "agentproof.protocol.repository-patch-request",
+  "schemaVersion": "1.0.0",
+  "actionType": "agentproof.repository_patch.v1",
+  "correlationId": "workflow-correlation-99999999",
+  "stateDirectory": "/tmp/agentproof-rc3-fixtures-eBXAm2/state",
+  "action": {
+    "type": "agentproof.repository_patch.v1",
+    "repositoryRoot": "/tmp/agentproof-rc3-fixtures-eBXAm2/repository",
+    "operations": [
+      {
+        "kind": "write",
+        "path": "protected.txt",
+        "contentBase64": "YWZ0ZXIK"
+      }
+    ]
+  },
+  "intent": {
+    "summary": "Sanitized RC3 fixture",
+    "requestedBy": "fixture-generator",
+    "acceptanceCriteria": [
+      "protected.txt is independently verified"
+    ]
+  },
+  "policy": {
+    "allowedRepositoryRoot": "/tmp/agentproof-rc3-fixtures-eBXAm2/repository",
+    "allowedTrackedPaths": [
+      "protected.txt"
+    ],
+    "allowedNewPaths": [],
+    "maxPatchBytes": 1024,
+    "maxFiles": 1
+  }
+}

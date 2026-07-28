@@ -1,0 +1,12 @@
+export { AgentProof } from "./service.js";
+export { LocalFileExecutor, SubprocessFileExecutor } from "./executor.js";
+export { createOperatorApprovalRequest, approvalFromOperatorReplay } from "./approval.js";
+export { resolveAgentProofStateRoot, resolveAgentProofDatabasePath } from "./state-root.js";
+export { Ed25519SigningProvider, signReceipt, verifySignedReceiptOffline, verifySignedReceiptWithTrust, verifyRepositoryPatchReceiptWithTrust, publicKeyFingerprint } from "./signer.js";
+export type { SigningProvider } from "./signer.js";
+export { FileTransactionStore } from "./store.js";
+export { observeFile, verifyFile } from "./verifier.js";
+export * from "./types.js";
+export * from "./repository-patch-types.js";
+export { RepositoryPatchAgentProof } from "./repository-patch-service.js";
+export { SubprocessRepositoryPatchExecutor } from "./repository-patch-executor.js";

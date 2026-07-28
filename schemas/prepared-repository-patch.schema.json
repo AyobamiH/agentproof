@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentproof.dev/schemas/2.0.0/prepared-repository-patch.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "actionType",
+    "correlationId",
+    "transactionId",
+    "stateDirectory",
+    "actionDigest",
+    "patchDigest",
+    "preparedDigest",
+    "state"
+  ],
+  "properties": {
+    "schema": {
+      "const": "agentproof.protocol.prepared-repository-patch"
+    },
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "actionType": {
+      "const": "agentproof.repository_patch.v1"
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transactionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stateDirectory": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actionDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "patchDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "preparedDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "state": {
+      "const": "prepared"
+    }
+  }
+}

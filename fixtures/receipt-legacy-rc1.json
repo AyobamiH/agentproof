@@ -1,0 +1,74 @@
+{
+  "schema": "agentproof.protocol.signed-receipt",
+  "schemaVersion": "1.0.0",
+  "actionType": "agentproof.repository_patch.v1",
+  "correlationId": "fixture-trusted",
+  "transactionId": "00000000-0000-4000-8000-000000000001",
+  "authorityEnvironment": "development",
+  "receipt": {
+    "schemaVersion": "agentproof.repository-patch.receipt.v1",
+    "transactionId": "00000000-0000-4000-8000-000000000001",
+    "receiptDigest": "fixture-body-digest",
+    "issuedAt": "2026-01-01T00:00:01.000Z",
+    "state": "verified",
+    "intent": {
+      "summary": "Sanitized validation fixture",
+      "requestedBy": "fixture",
+      "acceptanceCriteria": [
+        "verified"
+      ]
+    },
+    "operatorAuthority": null,
+    "repositoryIdentity": {
+      "canonicalRoot": "/validation/repository",
+      "gitDirectorySha256": "fixture-git-dir",
+      "baseCommit": "0000000000000000000000000000000000000000",
+      "branch": "main",
+      "headRef": "refs/heads/main",
+      "remotesDigest": "fixture-remotes",
+      "refsDigest": "fixture-refs"
+    },
+    "policyVersion": "agentproof.repository-patch.v1",
+    "patchDigest": "fixture-patch-digest",
+    "expectedDiffDigest": "fixture-diff-digest",
+    "beforeManifest": [],
+    "afterManifest": [],
+    "approvedPaths": [
+      "example.txt"
+    ],
+    "observedPaths": [
+      "example.txt"
+    ],
+    "verificationCommands": [],
+    "execution": {
+      "state": "executed",
+      "attemptedAt": "2026-01-01T00:00:00.000Z",
+      "completedAt": "2026-01-01T00:00:01.000Z",
+      "message": "Sanitized fixture execution."
+    },
+    "verification": {
+      "state": "verified",
+      "observedManifest": [],
+      "observedPaths": [
+        "example.txt"
+      ],
+      "observedDiffDigest": "fixture-diff-digest",
+      "identityUnchanged": true,
+      "unexpectedUntrackedPaths": [],
+      "commands": [],
+      "message": "Sanitized fixture verified."
+    },
+    "compensation": null,
+    "failure": null,
+    "reconciliation": [
+      "sanitized-fixture"
+    ],
+    "signature": {
+      "algorithm": "Ed25519",
+      "keyId": "fixture-trusted-key",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAXL4nxCcmnrqjGqijUaHWJCK5njSrgasdQL0VBPcBub4=\n-----END PUBLIC KEY-----\n",
+      "signerFingerprint": "sha256:2b4f1850e11225dab2c0e9ec9f6f1bde63f7103c5c800faf61cc99bcd3be9788",
+      "signatureBase64": "BonK7I5TxEjY+CMxbyoXF0RUO+iHNKSSU2dGJmjIgk13MBOonsVMNIiOvwhxBjb0DIPyB5GLn1j73QZ0sHVaDw=="
+    }
+  }
+}

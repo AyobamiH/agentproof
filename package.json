@@ -1,0 +1,84 @@
+{
+  "name": "@openclaw/agentproof",
+  "version": "0.1.0-rc.4",
+  "description": "Evidence-first authorization, exactly-once execution, independent verification, compensation, and signed receipts for consequential coding-agent actions.",
+  "type": "module",
+  "main": "dist/portable.js",
+  "types": "dist/portable.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "chmod 755 dist/cli.js dist/dev-authority-cli.js",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "demo": "npm run build && node dist/demo.js",
+    "verify-receipt": "npm run build && node dist/verify-receipt.js",
+    "pack:audit": "npm pack --dry-run",
+    "schemas:generate": "node scripts/generate-schemas.mjs",
+    "fixtures:generate": "npm run build && node scripts/generate-rc3-fixtures.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "typescript": "^5.4.5"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/portable.d.ts",
+      "import": "./dist/portable.js"
+    },
+    "./schemas/*": "./schemas/*",
+    "./development-authority": {
+      "types": "./dist/portable-development-authority.d.ts",
+      "import": "./dist/portable-development-authority.js"
+    }
+  },
+  "bin": {
+    "agentproof": "./dist/cli.js",
+    "agentproof-dev-authority": "./dist/dev-authority-cli.js"
+  },
+  "files": [
+    "dist/cli.js",
+    "dist/cli.d.ts",
+    "dist/dev-authority-cli.js",
+    "dist/dev-authority-cli.d.ts",
+    "dist/portable*.js",
+    "dist/portable*.d.ts",
+    "dist/repository-*.js",
+    "dist/repository-*.d.ts",
+    "dist/signer.js",
+    "dist/signer.d.ts",
+    "dist/hash.js",
+    "dist/hash.d.ts",
+    "dist/types.js",
+    "dist/types.d.ts",
+    "dist/receipt-v2.js",
+    "dist/receipt-v2.d.ts",
+    "dist/strict-json.js",
+    "dist/strict-json.d.ts",
+    "schemas/*.json",
+    "fixtures/*.json",
+    "migrations/*.sql",
+    "docs/*.md",
+    "CHANGELOG.md",
+    "README.md",
+    "SECURITY.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AyobamiH/openclaw-operator.git",
+    "directory": "agentproof"
+  },
+  "bugs": {
+    "url": "https://github.com/AyobamiH/openclaw-operator/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  },
+  "license": "Apache-2.0"
+}

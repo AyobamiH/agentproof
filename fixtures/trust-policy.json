@@ -1,0 +1,8 @@
+{
+  "schema": "agentproof.receipt-trust-policy.v2",
+  "trustedSignerFingerprints": [
+    "sha256:1b8b7dd897bc868267a0c33d825cbfbcbe2498e04d51ed7272a8ed39fc0b9d12"
+  ],
+  "requiredAuthorityEnvironment": "development",
+  "requiredPolicyVersion": "agentproof.repository-patch.v1"
+}

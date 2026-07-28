@@ -1,0 +1,27 @@
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { compensateRepositoryPatchWithReceipt, createApprovalRequest, executeApprovedTransaction, prepareRepositoryPatch, signingProviderFromPrivateKeyPem } from "../dist/portable.js";
+import { createDevelopmentApprovalDecision, createDevelopmentKeyPair } from "../dist/portable-development-authority.js";
+
+const fixtures=path.resolve("fixtures"), root=mkdtempSync(path.join(tmpdir(),"agentproof-rc3-fixtures-")), repo=path.join(root,"repository"), state=path.join(root,"state");
+execFileSync("git",["init","-b","main",repo]); execFileSync("git",["-C",repo,"config","user.email","fixture@example.invalid"]); execFileSync("git",["-C",repo,"config","user.name","RC3 Fixture"]);
+writeFileSync(path.join(repo,"protected.txt"),"before\n"); execFileSync("git",["-C",repo,"add","."]); execFileSync("git",["-C",repo,"commit","-m","base"]);
+const request={schema:"agentproof.protocol.repository-patch-request",schemaVersion:"1.0.0",actionType:"agentproof.repository_patch.v1",correlationId:"workflow-correlation-99999999",stateDirectory:state,action:{type:"agentproof.repository_patch.v1",repositoryRoot:repo,operations:[{kind:"write",path:"protected.txt",contentBase64:Buffer.from("after\n").toString("base64")}]},intent:{summary:"Sanitized RC3 fixture",requestedBy:"fixture-generator",acceptanceCriteria:["protected.txt is independently verified"]},policy:{allowedRepositoryRoot:repo,allowedTrackedPaths:["protected.txt"],allowedNewPaths:[],maxPatchBytes:1024,maxFiles:1}};
+const prepared=await prepareRepositoryPatch(request), approvalRequest=await createApprovalRequest(prepared,{expiresAt:"2099-01-01T00:00:00.000Z",nonce:"rc3-sanitized-single-use-nonce"});
+const authority=createDevelopmentKeyPair(), trustedKey=createDevelopmentKeyPair();
+const approval=createDevelopmentApprovalDecision({request:approvalRequest,decision:"approved",issuer:"rc3-sanitized-development-authority",privateKeyPem:authority.privateKeyPem,developmentMode:true,decidedAt:"2026-07-28T00:00:00.000Z"});
+const denied=createDevelopmentApprovalDecision({request:approvalRequest,decision:"denied",issuer:"rc3-sanitized-development-authority",privateKeyPem:authority.privateKeyPem,developmentMode:true,decidedAt:"2026-07-28T00:00:00.000Z"});
+const expiredRequest=await createApprovalRequest(prepared,{expiresAt:"2026-07-28T00:00:01.000Z",nonce:"rc3-sanitized-expired-nonce"});
+const expired=createDevelopmentApprovalDecision({request:expiredRequest,decision:"approved",issuer:"rc3-sanitized-development-authority",privateKeyPem:authority.privateKeyPem,developmentMode:true,decidedAt:"2026-07-28T00:00:00.000Z"});
+const execution={schema:"agentproof.protocol.execution-request",schemaVersion:"1.0.0",actionType:"agentproof.repository_patch.v1",correlationId:prepared.correlationId,transactionId:prepared.transactionId,stateDirectory:state,idempotencyKey:"rc3-sanitized-exactly-once",requiredAuthorityEnvironment:"development",trustedAuthorityFingerprints:[authority.fingerprint],approvalDecision:approval};
+const trusted=await executeApprovedTransaction(execution,{receiptSigner:signingProviderFromPrivateKeyPem("rc3-sanitized-receipt-policy",trustedKey.privateKeyPem)});
+const successor=await compensateRepositoryPatchWithReceipt({stateDirectory:state,transactionId:prepared.transactionId,correlationId:prepared.correlationId,authorityEnvironment:"development"},{receiptSigner:signingProviderFromPrivateKeyPem("rc3-sanitized-receipt-policy",trustedKey.privateKeyPem),trustedSignerFingerprints:[trustedKey.fingerprint]});
+const untrustedKey=createDevelopmentKeyPair(), untrusted={...trusted,proof:{...trusted.proof,keyId:"rc3-untrusted"}};
+const { createPrivateKey, sign }=await import("node:crypto"); const { signatureInputV2, payloadDigestV2 }=await import("../dist/receipt-v2.js");
+untrusted.proof.publicKeyPem=untrustedKey.publicKeyPem; untrusted.proof.signerFingerprint=untrustedKey.fingerprint; untrusted.proof.payloadDigest=payloadDigestV2(untrusted.payload); untrusted.proof.signatureBase64=sign(null,Buffer.from(signatureInputV2(untrusted.payload)),createPrivateKey(untrustedKey.privateKeyPem)).toString("base64");
+const tampered=structuredClone(trusted); tampered.payload.transactionId="00000000-0000-4000-8000-000000000099";
+const legacy=JSON.parse(readFileSync(new URL("../../validation-kits/agentproof-0.1.0-rc1/shared/fixtures/receipt-trusted.json",import.meta.url),"utf8"));
+for(const [name,value] of Object.entries({"request.json":request,"prepared-success.json":prepared,"approval-request.json":approvalRequest,"approval-approved.json":approval,"approval-denied.json":denied,"approval-expired.json":expired,"receipt-trusted.json":trusted,"receipt-compensated-successor.json":successor,"receipt-untrusted.json":untrusted,"receipt-tampered.json":tampered,"receipt-legacy-rc1.json":legacy,"trust-policy.json":{schema:"agentproof.receipt-trust-policy.v2",trustedSignerFingerprints:[trustedKey.fingerprint],requiredAuthorityEnvironment:"development",requiredPolicyVersion:"agentproof.repository-patch.v1"}})) writeFileSync(path.join(fixtures,name),JSON.stringify(value,null,2)+"\n");
+console.log(JSON.stringify({trustedSignerFingerprint:trustedKey.fingerprint,privateKeysPersisted:false}));

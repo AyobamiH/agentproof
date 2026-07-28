@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentproof.dev/schemas/2.0.0/receipt-verification-result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "cryptographicallyValid",
+    "trusted",
+    "signerFingerprint",
+    "reason",
+    "verifiedClaims",
+    "unverifiedTransportMetadata",
+    "errors",
+    "warnings"
+  ],
+  "properties": {
+    "schema": {
+      "const": "agentproof.protocol.receipt-verification-result"
+    },
+    "schemaVersion": {
+      "const": "2.0.0"
+    },
+    "cryptographicallyValid": {
+      "type": "boolean"
+    },
+    "trusted": {
+      "type": "boolean"
+    },
+    "signerFingerprint": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "enum": [
+        "trusted",
+        "valid_untrusted_signer",
+        "legacy_unbound_receipt",
+        "invalid_structure",
+        "unsupported_version",
+        "digest_mismatch",
+        "invalid_signature",
+        "approval_binding_inconsistent",
+        "policy_mismatch",
+        "broken_predecessor_chain"
+      ]
+    },
+    "verifiedClaims": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "unverifiedTransportMetadata": {
+      "type": "null"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentproof.dev/schemas/2.0.0/approval-request.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "actionType",
+    "correlationId",
+    "transactionId",
+    "stateDirectory",
+    "preparedDigest",
+    "expiresAt",
+    "nonce",
+    "binding",
+    "requestDigest"
+  ],
+  "properties": {
+    "schema": {
+      "const": "agentproof.protocol.approval-request"
+    },
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "actionType": {
+      "const": "agentproof.repository_patch.v1"
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transactionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stateDirectory": {
+      "type": "string",
+      "minLength": 1
+    },
+    "preparedDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 1
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "transactionId",
+        "intentDigest",
+        "actionDigest",
+        "target",
+        "baseCommit",
+        "branch",
+        "beforeManifestDigest",
+        "proposedManifestDigest",
+        "patchDigest",
+        "expectedDiffDigest",
+        "affectedPaths",
+        "verificationPlanDigest",
+        "policyVersion",
+        "expiresAt",
+        "nonce"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "agentproof.repository-patch.approval.v1"
+        },
+        "transactionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intentDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "actionDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseCommit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "beforeManifestDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "proposedManifestDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "patchDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "expectedDiffDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "affectedPaths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "verificationPlanDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policyVersion": {
+          "const": "agentproof.repository-patch.v1"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "requestDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

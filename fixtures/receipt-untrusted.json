@@ -1,0 +1,153 @@
+{
+  "payload": {
+    "schemaId": "agentproof.signed-receipt.v2",
+    "schemaVersion": "2.0.0",
+    "receiptFormatVersion": "v2",
+    "actionType": "agentproof.repository_patch.v1",
+    "receiptId": "c526555d-153c-4fbf-9e72-fb45db57bf41",
+    "issuedAt": "2026-07-28T19:53:30.541Z",
+    "transactionId": "86b2e09c-441c-40c3-b9ff-7637a0b1e53a",
+    "correlationId": "workflow-correlation-99999999",
+    "intentDigest": "29e2b4359105c2a9a54449055839a3208c3c4cfae99691a7d1e8c76e57520981",
+    "actionDigest": "0c52b4091cdd498f7af921075aa357887eb016cc1355d316bc88e92476f0719b",
+    "preparedActionDigest": "8741367b95726234fb988680289e9993beff50e03322f9fdaa840e69f7baf05b",
+    "repositoryRoot": "/tmp/agentproof-rc3-fixtures-eBXAm2/repository",
+    "repositoryRootDigest": "1e033b44cc9b2beae7d5cbc276eb506e0009fbef8fec5ab3b2c3e30be3b1a0d6",
+    "repositoryIdentity": {
+      "canonicalRoot": "/tmp/agentproof-rc3-fixtures-eBXAm2/repository",
+      "gitDirectorySha256": "d8b53c1b5f83d3d2c20a05dab51429c82ef7834fae9a5ed1f0be5451043110de",
+      "baseCommit": "88226709a76b39efac9baa199ec03cdd9d8a389a",
+      "branch": "main",
+      "headRef": "refs/heads/main",
+      "remotesDigest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "refsDigest": "d18c38f681d677cf29c52e4d39cb893c0823b2a915a984dc23c620a16dd2e7f4"
+    },
+    "authorityEnvironment": "development",
+    "policyVersion": "agentproof.repository-patch.v1",
+    "approvalBinding": {
+      "schemaId": "agentproof.approval-binding.v2",
+      "transactionId": "86b2e09c-441c-40c3-b9ff-7637a0b1e53a",
+      "correlationId": "workflow-correlation-99999999",
+      "originalTaskId": "8f09e53938f74a612b7e636a67656b11fdda248b1144785dc229b2f034bc278f",
+      "approvalTaskId": "8f09e53938f74a612b7e636a67656b11fdda248b1144785dc229b2f034bc278f",
+      "approvalDecisionId": "approval-decision:f99c1c22df95919304f405e8dc7cdbce70c856d2cc9e23b0e3385db783aecf03",
+      "approvedFromTaskId": "8f09e53938f74a612b7e636a67656b11fdda248b1144785dc229b2f034bc278f",
+      "intentDigest": "29e2b4359105c2a9a54449055839a3208c3c4cfae99691a7d1e8c76e57520981",
+      "actionDigest": "0c52b4091cdd498f7af921075aa357887eb016cc1355d316bc88e92476f0719b",
+      "preparedActionDigest": "8741367b95726234fb988680289e9993beff50e03322f9fdaa840e69f7baf05b",
+      "repositoryRoot": "/tmp/agentproof-rc3-fixtures-eBXAm2/repository",
+      "repositoryRootDigest": "1e033b44cc9b2beae7d5cbc276eb506e0009fbef8fec5ab3b2c3e30be3b1a0d6",
+      "baseCommit": "88226709a76b39efac9baa199ec03cdd9d8a389a",
+      "beforeStateDigest": "dff23fd4760e6552a9974a1e66a95fff3e77426c2cfce5ae7b305100d69d1f5a",
+      "proposedStateDigest": "96e64849fe02ddcd8e28f0636fefb09c88895500c32f821ba946ff703fb5e4e5",
+      "affectedPaths": [
+        "protected.txt"
+      ],
+      "policyVersion": "agentproof.repository-patch.v1",
+      "issuer": "rc3-sanitized-development-authority",
+      "decision": "approved",
+      "decidedAt": "2026-07-28T00:00:00.000Z",
+      "expiresAt": "2099-01-01T00:00:00.000Z",
+      "authorityEnvironment": "development",
+      "nonce": "rc3-sanitized-single-use-nonce"
+    },
+    "approvalBindingDigest": "7035b86f93c2b1997a1563bd4f92385810b7a2b9775a533b932ea8a1b5e3c0ca",
+    "approvalDecisionDigest": "f99c1c22df95919304f405e8dc7cdbce70c856d2cc9e23b0e3385db783aecf03",
+    "approvalAuthorityEvidence": "receipt_signer_attests_portable_authority_verified",
+    "beforeStateDigest": "dff23fd4760e6552a9974a1e66a95fff3e77426c2cfce5ae7b305100d69d1f5a",
+    "proposedStateDigest": "96e64849fe02ddcd8e28f0636fefb09c88895500c32f821ba946ff703fb5e4e5",
+    "observedStateDigest": "96e64849fe02ddcd8e28f0636fefb09c88895500c32f821ba946ff703fb5e4e5",
+    "executionState": "executed",
+    "verificationState": "verified",
+    "compensationState": null,
+    "evidenceDigests": {
+      "readOnlyEvidenceDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "executionEvidenceDigest": "8641b63ba218056a14f736f9fc3337cc044bea5aa6d56cda56d0b9ec9045b758",
+      "verificationEvidenceDigest": "077eb2ee019db289d59ad0a9a5157a7f01901ad6017cb67b95056f96a97d198c",
+      "compensationEvidenceDigest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    "signerRole": "independent_receipt_signer",
+    "signingPolicyId": "rc3-sanitized-receipt-policy",
+    "predecessorPayloadDigest": null,
+    "evidence": {
+      "intent": {
+        "summary": "Sanitized RC3 fixture",
+        "requestedBy": "fixture-generator",
+        "acceptanceCriteria": [
+          "protected.txt is independently verified"
+        ]
+      },
+      "affectedPaths": [
+        "protected.txt"
+      ],
+      "beforeManifest": [
+        {
+          "path": "protected.txt",
+          "mode": "100644",
+          "sha256": "9160d4be34c8695bd172a76c7c7966587ea5a4d991ad22c87b2b91af54aa9ebb",
+          "byteLength": 7,
+          "exists": true,
+          "tracked": true
+        }
+      ],
+      "proposedManifest": [
+        {
+          "path": "protected.txt",
+          "mode": "100644",
+          "sha256": "7b9a72466d3960eb2aacccfc848939453490db0678bd4725def3f789b891c919",
+          "byteLength": 6,
+          "exists": true,
+          "tracked": true
+        }
+      ],
+      "observedManifest": [
+        {
+          "path": "protected.txt",
+          "mode": "100644",
+          "sha256": "7b9a72466d3960eb2aacccfc848939453490db0678bd4725def3f789b891c919",
+          "byteLength": 6,
+          "exists": true,
+          "tracked": true
+        }
+      ],
+      "readOnlyEvidence": [],
+      "execution": {
+        "state": "executed",
+        "attemptedAt": "2026-07-28T19:53:30.312Z",
+        "completedAt": "2026-07-28T19:53:30.314Z",
+        "message": "Prepared repository patch applied within the bounded executor process.",
+        "executorProcessId": 24571
+      },
+      "verification": {
+        "state": "verified",
+        "observedManifest": [
+          {
+            "path": "protected.txt",
+            "mode": "100644",
+            "sha256": "7b9a72466d3960eb2aacccfc848939453490db0678bd4725def3f789b891c919",
+            "byteLength": 6,
+            "exists": true,
+            "tracked": true
+          }
+        ],
+        "observedPaths": [
+          "protected.txt"
+        ],
+        "observedDiffDigest": "a0d424b169a6ad52fe3c8497c2629d3511b87b093657ea1e924f4e5f617a8f16",
+        "identityUnchanged": true,
+        "unexpectedUntrackedPaths": [],
+        "commands": [],
+        "message": "Repository identity, path set, manifests, canonical diff and isolated commands verified."
+      },
+      "compensation": null
+    }
+  },
+  "proof": {
+    "algorithm": "Ed25519",
+    "keyId": "rc3-untrusted",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAgeuiRrPLMD8CwkuSbhjaB3YrFn1ZjBUFUhgaUiCW7bo=\n-----END PUBLIC KEY-----\n",
+    "signerFingerprint": "sha256:607f7736987dad57e1dc906e402bd1266be5b29983ac98db93ea80d1c7617bf9",
+    "payloadDigest": "360f5f8b39d1d0577384a06990eb6c673bd305e55a96057c79ebd8adafef7470",
+    "signatureBase64": "EcMr+iiH6McS7ioWwEMEiDv2vUQa3HpPMPpdEIvCfO2eARwepLP9Ni/yGbeBQ4F9ooKOrZhaRxeOGFii51p+Bg=="
+  }
+}

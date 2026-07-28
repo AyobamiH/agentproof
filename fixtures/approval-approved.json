@@ -1,0 +1,50 @@
+{
+  "schema": "agentproof.protocol.approval-decision",
+  "schemaVersion": "1.0.0",
+  "actionType": "agentproof.repository_patch.v1",
+  "correlationId": "workflow-correlation-99999999",
+  "transactionId": "86b2e09c-441c-40c3-b9ff-7637a0b1e53a",
+  "requestDigest": "8f09e53938f74a612b7e636a67656b11fdda248b1144785dc229b2f034bc278f",
+  "preparedDigest": "8741367b95726234fb988680289e9993beff50e03322f9fdaa840e69f7baf05b",
+  "decision": "approved",
+  "authorityEnvironment": "development",
+  "issuer": "rc3-sanitized-development-authority",
+  "decidedAt": "2026-07-28T00:00:00.000Z",
+  "expiresAt": "2099-01-01T00:00:00.000Z",
+  "nonce": "rc3-sanitized-single-use-nonce",
+  "authorityPublicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApLtpv5m7+1ANDYyMmjZK0OAvhjSfqYPRnNBQKnCPR5s=\n-----END PUBLIC KEY-----\n",
+  "authorityFingerprint": "sha256:a8e48338a17c4d199a3a0134e3b694d5dd32b7dcfe7e3411844651d4b207a7b8",
+  "approvalRequest": {
+    "schema": "agentproof.protocol.approval-request",
+    "schemaVersion": "1.0.0",
+    "actionType": "agentproof.repository_patch.v1",
+    "correlationId": "workflow-correlation-99999999",
+    "transactionId": "86b2e09c-441c-40c3-b9ff-7637a0b1e53a",
+    "stateDirectory": "/tmp/agentproof-rc3-fixtures-eBXAm2/state",
+    "preparedDigest": "8741367b95726234fb988680289e9993beff50e03322f9fdaa840e69f7baf05b",
+    "expiresAt": "2099-01-01T00:00:00.000Z",
+    "nonce": "rc3-sanitized-single-use-nonce",
+    "binding": {
+      "schemaVersion": "agentproof.repository-patch.approval.v1",
+      "transactionId": "86b2e09c-441c-40c3-b9ff-7637a0b1e53a",
+      "intentDigest": "29e2b4359105c2a9a54449055839a3208c3c4cfae99691a7d1e8c76e57520981",
+      "actionDigest": "0c52b4091cdd498f7af921075aa357887eb016cc1355d316bc88e92476f0719b",
+      "target": "/tmp/agentproof-rc3-fixtures-eBXAm2/repository",
+      "baseCommit": "88226709a76b39efac9baa199ec03cdd9d8a389a",
+      "branch": "main",
+      "beforeManifestDigest": "dff23fd4760e6552a9974a1e66a95fff3e77426c2cfce5ae7b305100d69d1f5a",
+      "proposedManifestDigest": "96e64849fe02ddcd8e28f0636fefb09c88895500c32f821ba946ff703fb5e4e5",
+      "patchDigest": "8ee1391e9fab06d33f201ea4b098f115e372b9a5ddcd1e3475e868a983ec2b2f",
+      "expectedDiffDigest": "a0d424b169a6ad52fe3c8497c2629d3511b87b093657ea1e924f4e5f617a8f16",
+      "affectedPaths": [
+        "protected.txt"
+      ],
+      "verificationPlanDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "policyVersion": "agentproof.repository-patch.v1",
+      "expiresAt": "2099-01-01T00:00:00.000Z",
+      "nonce": "rc3-sanitized-single-use-nonce"
+    },
+    "requestDigest": "8f09e53938f74a612b7e636a67656b11fdda248b1144785dc229b2f034bc278f"
+  },
+  "signatureBase64": "dTysGvAo+OMMRkKlEPsr1GfAs/vkX8MG+JzurIV4CXOqOcM2Qyvjl87M3WnEAV5oN+Z4obzjJzsRg2WWmpBUDA=="
+}
