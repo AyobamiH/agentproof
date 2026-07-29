@@ -2,6 +2,8 @@
 
 ## 0.1.0-rc.5
 
+- Adds a README-only executable CLI lifecycle that proves trusted receipt, exactly-once retry, and clean signed compensation in a disposable repository.
+
 - Closed the unsigned post-receipt compensation path and exposed correlation-bound public reconciliation for interrupted executions.
 - Development-authority JSON input now rejects duplicate keys.
 
