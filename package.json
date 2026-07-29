@@ -1,5 +1,5 @@
 {
-  "name": "@openclaw/agentproof",
+  "name": "@oneclicksystems/agentproof",
   "version": "0.1.0-rc.5",
   "description": "Evidence-first authorization, exactly-once execution, independent verification, compensation, and signed receipts for consequential coding-agent actions.",
   "type": "module",

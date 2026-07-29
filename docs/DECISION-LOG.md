@@ -45,6 +45,15 @@
 - **Consequences:** clearer product ownership and documentation; coordinated adapter extraction required.
 - **Reconsider when:** not expected; integrations must consume public contracts.
 
+## 2026-07-29 — Correct npm package ownership
+
+- **Context:** publication preflight proved the authenticated publisher does not control the npm `openclaw` organization scope; a local scoped name does not confer registry ownership.
+- **Decision:** reissue unpublished RC5 as `@oneclicksystems/agentproof`, the available scope owned by the authenticated npm user.
+- **Alternatives:** create or join an unrelated `openclaw` npm organization; use the already-occupied unscoped `agentproof` name.
+- **Evidence:** authenticated `npm whoami` as `oneclicksystems`, `403` for `openclaw` organization authority, and package-availability checks.
+- **Consequences:** replace the local release commit, tarball, Operator dependency, validation kit, and hash-bound approval; preserve and invalidate the unpublished old identity.
+- **Reconsider when:** package ownership moves through an explicit npm transfer or organization decision.
+
 ## 2026-07-28 — OpenClaw is an adapter and consumer
 
 - **Context:** AgentProof must be framework-neutral without losing canonical Operator approval/replay integration.

@@ -2,6 +2,8 @@
 
 ## 0.1.0-rc.5
 
+- Reissues the unpublished RC5 package under the publisher-owned npm scope `@oneclicksystems/agentproof`; the earlier local `@openclaw/agentproof` identity was never published.
+
 - Adds a README-only executable CLI lifecycle that proves trusted receipt, exactly-once retry, and clean signed compensation in a disposable repository.
 
 - Closed the unsigned post-receipt compensation path and exposed correlation-bound public reconciliation for interrupted executions.

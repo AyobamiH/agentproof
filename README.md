@@ -30,7 +30,7 @@ git -C "$REPO" add protected.txt
 git -C "$REPO" commit -m baseline
 
 npm init -y
-npm install /absolute/path/to/openclaw-agentproof-0.1.0-rc.5.tgz
+npm install /absolute/path/to/oneclicksystems-agentproof-0.1.0-rc.5.tgz
 AP=./node_modules/.bin/agentproof
 AUTH=./node_modules/.bin/agentproof-dev-authority
 
@@ -138,7 +138,7 @@ import {
   reconcileRepositoryPatch,
   compensateRepositoryPatchWithReceipt,
   verifyReceipt,
-} from "@openclaw/agentproof";
+} from "@oneclicksystems/agentproof";
 ```
 
 Every operation receives an explicit absolute state directory. `reconcileRepositoryPatch` re-observes an interrupted execution and signs only after verified state; compensation after a receipt requires an authenticated successor receipt. Imports perform no network calls, filesystem discovery, environment scanning, or background startup. See [Verified repository patch v1](docs/actions/repository-patch-v1.md) and [Signed receipt V2](docs/protocols/signed-receipt-v2.md).
