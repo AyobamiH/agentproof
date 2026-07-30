@@ -6,7 +6,10 @@
 - **RC2:** Receipt V2 repaired the trust boundary, but independent validation was incomplete and compensation returned the transaction ID where correlation was required.
 - **RC3:** correlation semantics and validation passed, but public-package preflight failed because licensing and prerelease packaging were not ready.
 - **RC4:** Apache-2.0, public metadata, executable packaging, 46/46 AgentProof tests, 395/395 Operator tests, deterministic packing, and Developers A–D passed. Its publication request was unconsumed and superseded before publication by standalone productisation.
-- **RC5:** standalone repository migration and package-consumer extraction are in local validation. Nothing is published.
+- **RC5:** standalone source is published at
+  `github.com/AyobamiH/agentproof`. The npm prerelease and GitHub Release remain
+  unpublished. Clean Git consumers can pin an exact repository commit; the
+  package builds its public exports during that source installation.
 
 ## Supported capability
 
@@ -18,4 +21,7 @@ The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem.
 
 ## Active gate
 
-The required terminal state is `awaiting_hash_bound_repository_creation_and_publication_approval`: one approval bound to the standalone commit, Operator adapter commit, frozen RC5 tarball, public repository creation, source push, GitHub prerelease, and npm `next` publication.
+Source publication is complete. Registry publication and a GitHub Release
+remain separate release actions and are not implied by repository availability.
+The current integration gate is a reproducible clean consumer pinned to an
+exact source commit; npm `next` publication remains separately approval-bound.
