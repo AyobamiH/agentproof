@@ -13,6 +13,22 @@ Start with [Project direction](docs/PROJECT-DIRECTION.md). Security decisions li
 - Git and a local filesystem
 - Linux, macOS, or WSL2; native Windows is not yet validated
 
+## Reproducible source consumption
+
+Until a registry prerelease is published, consumers may pin the package to an
+exact repository commit. The `prepare` script builds the public `dist/`
+exports during Git dependency installation, so a clean consumer does not
+depend on an unpublished registry tarball or a maintainer's local cache.
+
+Use an immutable commit SHA rather than a moving branch:
+
+```sh
+npm install "github:AyobamiH/agentproof#<exact-commit-sha>"
+```
+
+This is a source-consumption path, not evidence that an npm package has been
+published.
+
 ## CLI quickstart
 
 This complete development-only example uses a disposable Git repository. It requires only this README and the packed tarball. All state, keys, and evidence stay under the temporary directory.
