@@ -1,6 +1,6 @@
 # Current status
 
-Current main commit: `2ec72f15a50881104ad03d92cde133d7a2351685`
+Lifecycle-contract implementation merge: `2ec72f15a50881104ad03d92cde133d7a2351685`
 
 ## Release history
 
