@@ -1,5 +1,7 @@
 # Current status
 
+Current main commit: `2ec72f15a50881104ad03d92cde133d7a2351685`
+
 ## Release history
 
 - **RC1:** validation exposed a signed-receipt trust defect: important identities and authority claims were not all cryptographically bound. RC1 receipts are legacy unbound evidence and can never verify as trusted.
