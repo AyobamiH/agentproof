@@ -1,5 +1,14 @@
 # Decision log
 
+## 2026-08-28 — Record DoneState lifecycle candidates without claiming runtime support
+
+- **Context:** Proof & State requires AgentProof evidence for future merge, deployment, and release actions.
+- **Decision:** document three separate candidate contracts and their activation gates; do not widen the RC5 runtime or receipt constants before production authority and action-specific verification canaries exist.
+- **Alternatives:** add speculative generic receipts; let DoneState self-attest lifecycle effects.
+- **Evidence:** current RC5 tests prove only `agentproof.repository_patch.v1`; DoneState and OpsTruth already enforce separate execution and verification planes.
+- **Consequences:** the portfolio direction is durable without creating a false capability claim or weakening receipt semantics.
+- **Reconsider when:** the first candidate has a prepared-action schema, production authority provider, ambiguous-effect fixtures, DoneState adapter, OpsTruth verifier fixture, and live canary.
+
 ## 2026-07-23 — Incubate separately inside OpenClaw Operator
 
 - **Context:** AgentProof needed Operator approval dogfooding while mutating authority had to remain separate from read-only evidence tooling.

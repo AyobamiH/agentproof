@@ -14,6 +14,8 @@
     "demo": "npm run build && node dist/demo.js",
     "verify-receipt": "npm run build && node dist/verify-receipt.js",
     "pack:audit": "npm pack --dry-run",
+    "docs:check": "node scripts/check-documentation-closure.mjs",
+    "check": "npm run typecheck && npm test && npm run docs:check && npm run pack:audit",
     "schemas:generate": "node scripts/generate-schemas.mjs",
     "fixtures:generate": "npm run build && node scripts/generate-rc3-fixtures.mjs"
   },
