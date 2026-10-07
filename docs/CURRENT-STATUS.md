@@ -23,9 +23,20 @@ The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem.
 
 ## Active gate
 
-Source, tag, and GitHub prerelease publication are complete. Registry publication
-remains a separate release action and is not implied by repository availability.
-The current integration gate is a reproducible clean consumer pinned to an
-exact source commit; npm `next` publication remains separately approval-bound.
+Source, tag, and GitHub prerelease publication are complete. The npm prerelease remains unpublished.
 
-DoneState has named merge, deployment, and release receipts as its next lifecycle integration requirement. AgentProof has not added those runtime actions: production authority/signing and deterministic action-specific verification contracts remain gates. The candidate adapter boundary is documented in `docs/protocols/donestate-lifecycle-adapter.md`.
+The repository now has a stage-only GitHub OIDC release lane in
+`.github/workflows/release-prerelease.yml`. It validates the exact RC5 package,
+runs the full release checks, and may execute only `npm stage publish --tag next`.
+It contains no direct `npm publish` command and no long-lived npm write token.
+The remaining registry boundary is npm trusted-publisher configuration,
+successful staging, maintainer inspection, explicit 2FA approval, and clean
+public-registry/install verification. See `docs/NPM-RELEASE.md`.
+
+The current integration gate after registry publication remains measured
+independent adoption and a production authority/signing provider. DoneState has
+named merge, deployment, and release receipts as future lifecycle candidates.
+AgentProof has not enabled those runtime actions: production authority/signing,
+action-specific threat models, deterministic provider reconciliation, OpsTruth
+verification fixtures, and exact canaries remain gates. The candidate adapter
+boundary is documented in `docs/protocols/donestate-lifecycle-adapter.md`.
