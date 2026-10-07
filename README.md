@@ -2,7 +2,7 @@
 
 AgentProof lets an agent perform an authorised repository change and produce independently verifiable evidence of exactly what happened, under whose authority, with exactly-once execution and deterministic recovery.
 
-The `0.1.0-rc.5` prerelease protects one action: `agentproof.repository_patch.v1`. It prepares an exact allowlisted patch against a clean local Git repository, binds approval to that prepared state, mutates in a separate executor process, independently verifies repository state, compensates when possible, and emits a signed Receipt V2.
+The `0.1.0-rc.6` prerelease protects one action: `agentproof.repository_patch.v1`. It prepares an exact allowlisted patch against a clean local Git repository, binds approval to that prepared state, mutates in a separate executor process, independently verifies repository state, compensates when possible, and emits a signed Receipt V2.
 
 Start with [Project direction](docs/PROJECT-DIRECTION.md). Security decisions live in [SECURITY.md](SECURITY.md), the trust roles in [Trust model](docs/TRUST-MODEL.md), and evidence-led priorities in the [Roadmap](docs/ROADMAP.md). The npm prerelease procedure and human 2FA publication boundary are documented in [npm release procedure](docs/NPM-RELEASE.md).
 
@@ -46,7 +46,7 @@ git -C "$REPO" add protected.txt
 git -C "$REPO" commit -m baseline
 
 npm init -y
-npm install /absolute/path/to/oneclicksystems-agentproof-0.1.0-rc.5.tgz
+npm install /absolute/path/to/oneclicksystems-agentproof-0.1.0-rc.6.tgz
 AP=./node_modules/.bin/agentproof
 AUTH=./node_modules/.bin/agentproof-dev-authority
 
@@ -173,7 +173,7 @@ Five roles remain distinct: proposer, approval authority, executor, receipt sign
 
 ## Development warning
 
-The included development authority is for local testing only. Its approvals are marked `development` and fail closed for transactions requiring production authority. RC5 does not provide a production KMS/HSM signer, OS sandbox, hosted authority, or service activation.
+The included development authority is for local testing only. Its approvals are marked `development` and fail closed for transactions requiring production authority. RC6 does not provide a production KMS/HSM signer, OS sandbox, hosted authority, or service activation.
 
 ## Licence
 
