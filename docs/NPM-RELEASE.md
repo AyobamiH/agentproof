@@ -14,9 +14,11 @@ human maintainer to approve the exact package with 2FA.
 - GitHub release workflow: `.github/workflows/release-github-prerelease.yml`
 - later npm OIDC workflow: `.github/workflows/release-prerelease.yml`
 
-RC5 remains immutable historical prerelease evidence. RC6 is a new release
+RC5 remains immutable historical prerelease evidence and is already available on
+npm. Its registry tarball matches the GitHub asset exactly; see [RC5 registry
+reconciliation](evidence/npm-rc5-registry-reconciliation.md). RC6 is a new release
 subject because current main contains packaged and repository-level changes that
-post-date the RC5 tag.
+post-date the RC5 tag. RC5 availability does not establish RC6 publication.
 
 ## 1. Create the exact GitHub prerelease
 
@@ -33,11 +35,12 @@ workflow:
 The workflow has GitHub `contents: write` authority only. It has no npm
 credential and cannot publish to npm.
 
-## 2. Bootstrap the first npm package
+## 2. Stage the exact RC6 artifact
 
-`@oneclicksystems/agentproof` has not previously existed on npm. The first
-registry release is therefore deliberately bootstrapped from an authenticated
-publisher shell rather than by introducing a long-lived CI write token.
+`@oneclicksystems/agentproof` already exists on npm at RC5. An authenticated
+publisher can stage the exact RC6 artifact without introducing a long-lived CI
+write token. Existing publication does not prove that a trusted publisher is
+configured or grant permission to publish a new version.
 
 First confirm the publisher identity:
 
@@ -113,9 +116,11 @@ Retain the GitHub release URL, release asset digest, npm stage ID, registry
 integrity/tarball metadata, and clean-install result as immutable release
 evidence.
 
-## 4. Enable stage-only OIDC for later releases
+## 4. Configure stage-only OIDC
 
-Once the package exists on npm, configure its trusted publisher with stage-only
+The package-existence prerequisite is satisfied by RC5. Inspect the existing
+trusted-publisher configuration with `npm trust list @oneclicksystems/agentproof`
+before creating one. When no trusted publisher exists, configure stage-only
 authority:
 
 ```sh
@@ -135,6 +140,10 @@ For later prereleases, dispatch **Stage AgentProof prerelease to npm** on
 - that tag resolves to the exact current `main` commit;
 - the version is not already public on npm;
 - `npm ci` and `npm run check` pass.
+
+If current main has advanced beyond the release tag, this workflow deliberately
+refuses staging. Use the authenticated exact-artifact procedure above for the
+already-cut release; do not move a release tag or bypass the identity check.
 
 It then executes only:
 

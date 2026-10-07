@@ -6,7 +6,7 @@ Its first commercial wedge is a verified local repository patch: an agent prepar
 
 ## What is proven
 
-The local `agentproof.repository_patch.v1` lifecycle, durable SQLite state, approval replay protection, separate executor, deterministic reconciliation, independent verification, Receipt V2, append-only compensation successors, CLI/SDK package, and development-authority separation have passed automated and isolated agent validation. RC5 moves that unchanged capability into its standalone source boundary. Its GitHub prerelease is published; npm `next` remains unpublished and separately approval-bound.
+The local `agentproof.repository_patch.v1` lifecycle, durable SQLite state, approval replay protection, separate executor, deterministic reconciliation, independent verification, Receipt V2, append-only compensation successors, CLI/SDK package, and development-authority separation have passed automated and isolated agent validation. RC5 moves that unchanged capability into its standalone source boundary. Its GitHub and npm prereleases are published, with matching artifact bytes and a verified clean consumer. RC6 is the current source release; its npm publication remains separately approval-bound. See [Current status](CURRENT-STATUS.md) for version-specific evidence.
 
 ## Non-negotiable boundaries
 

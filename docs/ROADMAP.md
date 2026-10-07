@@ -1,6 +1,6 @@
 # Evidence-led roadmap
 
-1. **Standalone public prerelease.** Use the stage-only OIDC lane to cut and publish RC6, inspect the exact artifact, approve with maintainer 2FA, then verify the public registry and a clean install. The RC5 GitHub prerelease is historical; RC6 becomes the current GitHub prerelease after its exact merge gate passes. npm remains approval-bound.
+1. **Standalone public prerelease.** RC5 is already published on GitHub and npm, with matching bytes and a clean development lifecycle result. RC6's GitHub prerelease is published from merged source `a0ee17a70d05bc3c339c0c15be6bb38b4517771a`; stage its exact artifact, inspect it, approve with maintainer 2FA, then verify that version from the public registry and a clean install. RC6 npm publication remains approval-bound.
 2. **Ten independent agent installations.** After npm publication, measure first receipt, blockers, assistance, trust comprehension, and intent to integrate.
 3. **Verified repository-change usage.** Measure successful actions, duplicate prevention, false-success detection, verification latency, compensation, and recovery.
 4. **Adoption repairs.** Fix documentation, packaging, portability, and protocol ambiguity demonstrated by those installations.
