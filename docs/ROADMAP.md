@@ -1,7 +1,7 @@
 # Evidence-led roadmap
 
-1. **Standalone public prerelease.** Freeze RC5 and publish only after the exact repository/artifact approval boundary is granted.
-2. **Ten independent agent installations.** Measure first receipt, blockers, assistance, trust comprehension, and intent to integrate.
+1. **Standalone public prerelease.** Use the stage-only OIDC lane to stage RC5, inspect the exact artifact, approve with maintainer 2FA, then verify the public registry and a clean install. GitHub prerelease publication is already complete; npm remains approval-bound.
+2. **Ten independent agent installations.** After npm publication, measure first receipt, blockers, assistance, trust comprehension, and intent to integrate.
 3. **Verified repository-change usage.** Measure successful actions, duplicate prevention, false-success detection, verification latency, compensation, and recovery.
 4. **Adoption repairs.** Fix documentation, packaging, portability, and protocol ambiguity demonstrated by those installations.
 5. **Production authority and signing provider.** Add an explicit production provider without weakening development/production separation.
