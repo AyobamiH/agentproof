@@ -1,0 +1,107 @@
+name: Publish AgentProof GitHub prerelease
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: agentproof-github-prerelease
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out exact main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Resolve release subject
+        id: subject
+        run: |
+          node --input-type=module <<'NODE' >> "$GITHUB_OUTPUT"
+          import { existsSync, readFileSync } from "node:fs";
+
+          const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+          const version = pkg.version;
+          if (pkg.name !== "@oneclicksystems/agentproof") {
+            throw new Error(`unexpected package name: ${pkg.name}`);
+          }
+          if (!/^\d+\.\d+\.\d+-[0-9A-Za-z.-]+$/.test(version)) {
+            throw new Error(`main package version is not an explicit prerelease: ${version}`);
+          }
+
+          const notes = `docs/releases/${version}.md`;
+          if (!existsSync(notes)) {
+            throw new Error(`missing release notes: ${notes}`);
+          }
+
+          console.log(`version=${version}`);
+          console.log(`tag=v${version}`);
+          console.log(`notes=${notes}`);
+          NODE
+
+      - name: Stop if this exact release already exists
+        id: existing
+        env:
+          TAG: ${{ steps.subject.outputs.tag }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "GitHub prerelease $TAG already exists; no release mutation required."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install exact dependencies
+        if: steps.existing.outputs.exists != 'true'
+        run: npm ci
+
+      - name: Run full release checks
+        if: steps.existing.outputs.exists != 'true'
+        run: npm run check
+
+      - name: Pack exact release artifact
+        if: steps.existing.outputs.exists != 'true'
+        id: pack
+        run: |
+          npm pack --json > "${RUNNER_TEMP}/pack.json"
+          node --input-type=module <<'NODE' >> "$GITHUB_OUTPUT"
+          import { readFileSync } from "node:fs";
+          const result = JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/pack.json`, "utf8"));
+          if (!Array.isArray(result) || result.length !== 1 || !result[0]?.filename) {
+            throw new Error("npm pack did not return one release artifact");
+          }
+          console.log(`filename=${result[0].filename}`);
+          console.log(`integrity=${result[0].integrity ?? ""}`);
+          console.log(`shasum=${result[0].shasum ?? ""}`);
+          NODE
+
+      - name: Create exact GitHub prerelease
+        if: steps.existing.outputs.exists != 'true'
+        env:
+          TAG: ${{ steps.subject.outputs.tag }}
+          VERSION: ${{ steps.subject.outputs.version }}
+          NOTES: ${{ steps.subject.outputs.notes }}
+          TARBALL: ${{ steps.pack.outputs.filename }}
+        run: |
+          gh release create "$TAG" "$TARBALL" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "AgentProof $VERSION" \
+            --notes-file "$NOTES" \
+            --prerelease
