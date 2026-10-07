@@ -4,7 +4,7 @@ AgentProof lets an agent perform an authorised repository change and produce ind
 
 The `0.1.0-rc.5` prerelease protects one action: `agentproof.repository_patch.v1`. It prepares an exact allowlisted patch against a clean local Git repository, binds approval to that prepared state, mutates in a separate executor process, independently verifies repository state, compensates when possible, and emits a signed Receipt V2.
 
-Start with [Project direction](docs/PROJECT-DIRECTION.md). Security decisions live in [SECURITY.md](SECURITY.md), the trust roles in [Trust model](docs/TRUST-MODEL.md), and evidence-led priorities in the [Roadmap](docs/ROADMAP.md).
+Start with [Project direction](docs/PROJECT-DIRECTION.md). Security decisions live in [SECURITY.md](SECURITY.md), the trust roles in [Trust model](docs/TRUST-MODEL.md), and evidence-led priorities in the [Roadmap](docs/ROADMAP.md). The npm prerelease procedure and human 2FA publication boundary are documented in [npm release procedure](docs/NPM-RELEASE.md).
 
 ## Requirements
 
