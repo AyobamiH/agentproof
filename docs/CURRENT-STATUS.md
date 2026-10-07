@@ -8,10 +8,8 @@ Lifecycle-contract implementation merge: `2ec72f15a50881104ad03d92cde133d7a23516
 - **RC2:** Receipt V2 repaired the trust boundary, but independent validation was incomplete and compensation returned the transaction ID where correlation was required.
 - **RC3:** correlation semantics and validation passed, but public-package preflight failed because licensing and prerelease packaging were not ready.
 - **RC4:** Apache-2.0, public metadata, executable packaging, 46/46 AgentProof tests, 395/395 Operator tests, deterministic packing, and Developers A–D passed. Its publication request was unconsumed and superseded before publication by standalone productisation.
-- **RC5 (`0.1.0-rc.5`):** standalone source, tag, and GitHub prerelease are published at
-  `github.com/AyobamiH/agentproof`. The npm prerelease remains unpublished.
-  Clean Git consumers can pin an exact repository commit; the
-  package builds its public exports during that source installation.
+- **RC5 (`0.1.0-rc.5`):** standalone source, tag, GitHub prerelease, and packaged tarball are published at `github.com/AyobamiH/agentproof`. It remains immutable historical prerelease evidence and was never published to npm.
+- **RC6 (`0.1.0-rc.6`):** current release subject. It carries the same proven repository-patch runtime plus reproducible Git consumption, repository CI/governance, the packaged AgentProof skill, the DoneState lifecycle-adapter boundary, and guarded GitHub/npm release procedures. Merge to main creates the GitHub prerelease only after the exact RC6 release gate passes. The npm prerelease remains unpublished.
 
 ## Supported capability
 
@@ -23,15 +21,12 @@ The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem.
 
 ## Active gate
 
-Source, tag, and GitHub prerelease publication are complete. The npm prerelease remains unpublished.
+RC6 is the current release subject. The repository now has two release boundaries:
 
-The repository now has a stage-only GitHub OIDC release lane in
-`.github/workflows/release-prerelease.yml`. It validates the exact RC5 package,
-runs the full release checks, and may execute only `npm stage publish --tag next`.
-It contains no direct `npm publish` command and no long-lived npm write token.
-The remaining registry boundary is npm trusted-publisher configuration,
-successful staging, maintainer inspection, explicit 2FA approval, and clean
-public-registry/install verification. See `docs/NPM-RELEASE.md`.
+1. `.github/workflows/release-github-prerelease.yml` creates the exact GitHub RC6 tag and prerelease tarball only after `npm run check` passes on the merged commit.
+2. `.github/workflows/release-prerelease.yml` is the stage-only OIDC lane for npm once the package exists and a package-level trusted publisher has been configured. It refuses to stage unless the release tag resolves to the exact current main commit, contains no direct `npm publish` command, and requires no long-lived npm write token.
+
+Because `@oneclicksystems/agentproof` has never existed on npm, the first registry publication is an explicit bootstrap: stage the exact GitHub RC6 tarball from an authenticated publisher session, inspect it, approve with 2FA, verify the public registry and clean install, then configure the stage-only trusted publisher for later releases. The npm prerelease remains unpublished. See `docs/NPM-RELEASE.md`.
 
 The current integration gate after registry publication remains measured
 independent adoption and a production authority/signing provider. DoneState has
