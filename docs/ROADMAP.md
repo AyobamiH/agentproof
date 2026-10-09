@@ -1,7 +1,7 @@
 # Evidence-led roadmap
 
-1. **Standalone public prerelease.** RC5 is already published on GitHub and npm, with matching bytes and a clean development lifecycle result. RC6's GitHub prerelease is published from merged source `a0ee17a70d05bc3c339c0c15be6bb38b4517771a`; stage its exact artifact, inspect it, approve with maintainer 2FA, then verify that version from the public registry and a clean install. RC6 npm publication remains approval-bound.
-2. **Ten independent agent installations.** After npm publication, measure first receipt, blockers, assistance, trust comprehension, and intent to integrate.
+1. **Standalone public prerelease — complete.** RC6 is published on GitHub and npm from merged source `a0ee17a70d05bc3c339c0c15be6bb38b4517771a`. GitHub, staged, and registry tarballs match byte-for-byte; maintainer 2FA approval, clean registry installation, package exports, schemas, CLI, and registry signature passed. The trusted GitHub workflow has stage-only authority. See [RC6 registry reconciliation](evidence/npm-rc6-registry-reconciliation.md).
+2. **Ten independent agent installations — active.** Measure first receipt, blockers, assistance, trust comprehension, and intent to integrate.
 3. **Verified repository-change usage.** Measure successful actions, duplicate prevention, false-success detection, verification latency, compensation, and recovery.
 4. **Adoption repairs.** Fix documentation, packaging, portability, and protocol ambiguity demonstrated by those installations.
 5. **Production authority and signing provider.** Add an explicit production provider without weakening development/production separation.

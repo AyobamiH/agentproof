@@ -14,6 +14,11 @@ human maintainer to approve the exact package with 2FA.
 - GitHub release workflow: `.github/workflows/release-github-prerelease.yml`
 - later npm OIDC workflow: `.github/workflows/release-prerelease.yml`
 
+RC6 completed this procedure on 9 October 2026. Its GitHub, staged, and registry
+artifacts match byte-for-byte; `next` resolves to RC6; clean installation and
+public exports passed; and the GitHub workflow now has stage-only trusted
+publisher authority. See [RC6 registry reconciliation](evidence/npm-rc6-registry-reconciliation.md).
+
 RC5 remains immutable historical prerelease evidence and is already available on
 npm. Its registry tarball matches the GitHub asset exactly; see [RC5 registry
 reconciliation](evidence/npm-rc5-registry-reconciliation.md). RC6 is a new release
