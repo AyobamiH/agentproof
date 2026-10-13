@@ -1,5 +1,14 @@
 # Decision log
 
+## 2026-10-13 — Implement explicit external-provider clients before activation
+
+- **Context:** adoption/recovery tooling is merged. The user requested immediate remaining engineering work, while no production provider configuration or custody evidence is available in this repository.
+- **Decision:** add an optional SDK subpath with a Vault Transit Ed25519 signing adapter and an external signed-approval client. Require fixed versions, explicit trust pins, bounded HTTPS calls and short-lived credentials supplied by the caller.
+- **Evidence:** documented Vault API contract; positive and adversarial wire fixtures; actual adapter outage/reconciliation/idempotency coverage; packed export/import checks.
+- **Consequences:** operators can integrate real services without putting a private signing key inside AgentProof or changing the existing action. The client cannot create an approval authority or prove custody, IAM, adoption or DoneState consequences. No release tag or npm version is reused.
+- **Reconsider when:** a configured service supplies independent identity/policy evidence and passes the exact production canary, or demonstrated adoption requires a different provider.
+
+
 ## 2026-10-13 — Measure adoption without manufacturing product authority
 
 - **Context:** RC6 distribution is complete, but README/source-direction text still described publication as pending. Ten independent installations and production provider evidence remain absent.

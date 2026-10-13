@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add optional explicit Vault Transit Ed25519 signing and external production-approval clients with pinned trust, bounded HTTPS and no credential persistence.
+- Verify provider wire failures, signature/key-version rejection and real-adapter outage recovery; document the separate production activation gate.
+
 - Add source-only clean-install acceptance and structured independent-adoption observation/aggregation tools.
 - Cover injected signer outage recovery without repeated mutation or production-authority claims.
 - Correct RC6 registry installation and standalone harness documentation.

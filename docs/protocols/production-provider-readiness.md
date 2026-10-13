@@ -1,6 +1,6 @@
 # Production provider readiness
 
-Status: prerequisite contract and engineering coverage; no production provider activated.
+Status: explicit SDK adapters and engineering coverage in unreleased source; no production provider activated.
 
 The portable SDK already accepts a `SigningProvider` with asynchronous `keyId()`,
 `publicKeyPem()` and `signCanonical(payload)`. An integration can retain signing
@@ -24,15 +24,20 @@ reformatted JSON object. See [Receipt V2](signed-receipt-v2.md). An embedded key
 never a trust anchor. Do not turn a development approval into production authority
 by changing an environment string.
 
-`src/test/signing-provider-boundary.test.ts` exercises the existing provider
-interface using a disposable development fixture: a signer outage after verified
-mutation, successful reconciliation, exactly-once retry and rejection under
-production trust policy. This proves recovery mechanics only. It is not evidence
+`src/test/signing-provider-boundary.test.ts` exercises the concrete Vault adapter
+and external approval client against disposable mock services and fixture identities: a signer outage after verified
+mutation, successful reconciliation, exactly-once retry and rejection of a development
+decision when production policy is required. This proves recovery mechanics only. It is not evidence
 of an external service, production IAM or hardware-backed custody.
+
+The optional [production-provider adapters](production-provider-adapters.md) now
+implement pinned Vault Transit signing and external signed-approval consumption.
+Their adversarial fixtures validate transport, request binding and cryptographic
+responses. No live Vault or approval service is inferred from these tests.
 
 ## Unresolved external inputs
 
-No production provider, account/project, key identifier, approved signer policy,
+No live production provider endpoint, account/project, key identifier, approved signer policy,
 out-of-band trust fingerprint or authenticated canary target is configured in this
 repository. Selecting and operating those resources requires real infrastructure
 and authority evidence. The repository must not invent them or create a hidden

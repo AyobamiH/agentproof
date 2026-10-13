@@ -36,6 +36,10 @@
     "./development-authority": {
       "types": "./dist/portable-development-authority.d.ts",
       "import": "./dist/portable-development-authority.js"
+    },
+    "./production-providers": {
+      "types": "./dist/portable-production-providers.d.ts",
+      "import": "./dist/portable-production-providers.js"
     }
   },
   "bin": {
