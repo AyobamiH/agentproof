@@ -174,6 +174,15 @@ import {
 
 Every operation receives an explicit absolute state directory. `reconcileRepositoryPatch` re-observes an interrupted execution and signs only after verified state; compensation after a receipt requires an authenticated successor receipt. Imports perform no network calls, filesystem discovery, environment scanning, or background startup. See [Verified repository patch v1](docs/actions/repository-patch-v1.md) and [Signed receipt V2](docs/protocols/signed-receipt-v2.md).
 
+## External provider integration (unreleased)
+
+The source SDK now includes the explicit `production-providers` subpath: a pinned
+Vault Transit Ed25519 signer and a client for transaction-bound decisions from an
+external approval service. See [configuration and trust boundaries](docs/protocols/production-provider-adapters.md).
+These clients require separately provisioned services, credentials and trust pins.
+They are not present in the published RC6 package and do not establish production
+activation.
+
 ## Verify a receipt offline
 
 ```sh

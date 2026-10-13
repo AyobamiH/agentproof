@@ -5,12 +5,16 @@ import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { sign } from "node:crypto";
+import { stableJson } from "../hash.js";
 import { prepareRepositoryPatch, createApprovalRequest, executeApprovedTransaction, getTransactionStatus,
-  reconcileRepositoryPatch, signingProviderFromPrivateKeyPem, verifyReceipt, type ExecutionRequestDocument, type SigningProvider } from "../portable.js";
+  reconcileRepositoryPatch, signingProviderFromPrivateKeyPem, verifyReceipt, type ExecutionRequestDocument } from "../portable.js";
 import { createDevelopmentApprovalDecision, createDevelopmentKeyPair } from "../portable-development-authority.js";
 
+import { createProductionApprovalClient, createVaultTransitSigningProvider } from "../portable-production-providers.js";
+
 const exec = promisify(execFile);
-test("injected signer outage preserves verified mutation and reconciliation emits a trusted receipt once", async () => {
+test("external approval and Vault adapters preserve production policy and recover without reexecution (fixtures only)", async t => {
   const root = await mkdtemp(path.join(tmpdir(), "agentproof-provider-"));
   try {
     const repo = path.join(root, "repo");
@@ -29,28 +33,59 @@ test("injected signer outage preserves verified mutation and reconciliation emit
     });
     const request=await createApprovalRequest(prepared,{expiresAt:new Date(Date.now()+60_000).toISOString(),nonce:"provider-nonce"});
     const authority=createDevelopmentKeyPair(),key=createDevelopmentKeyPair();
-    const approvalDecision=createDevelopmentApprovalDecision({request,decision:"approved",issuer:"test-development",privateKeyPem:authority.privateKeyPem,developmentMode:true});
+    let available=false,signatures=0;
+    const custody=signingProviderFromPrivateKeyPem("external-provider-fixture",key.privateKeyPem);
+    // Disposable services and identities prove wire/SDK conformance, never production custody.
+    t.mock.method(globalThis, "fetch", async (url: string, init: RequestInit) => {
+      if (url === "https://approval.example.invalid/decisions") {
+        assert.deepEqual(JSON.parse(init.body as string), request);
+        const unsigned = {
+          schema: "agentproof.protocol.approval-decision", schemaVersion: "1.0.0",
+          actionType: request.actionType, correlationId: request.correlationId, transactionId: request.transactionId,
+          requestDigest: request.requestDigest, preparedDigest: request.preparedDigest,
+          decision: "approved", authorityEnvironment: "production", issuer: "isolated-fixture-policy",
+          decidedAt: new Date().toISOString(), expiresAt: request.expiresAt, nonce: request.nonce,
+          authorityPublicKeyPem: authority.publicKeyPem, authorityFingerprint: authority.fingerprint,
+          approvalRequest: request,
+        };
+        return new Response(JSON.stringify({ ...unsigned,
+          signatureBase64: sign(null, Buffer.from(stableJson(unsigned)), authority.privateKeyPem).toString("base64") }),
+          { headers: { "content-type": "application/json" } });
+      }
+      assert.equal(url, "https://vault.example.invalid/v1/transit/sign/receipt");
+      if (!available) return new Response("unavailable", { status: 503 });
+      signatures++;
+      const input = Buffer.from(JSON.parse(init.body as string).input, "base64").toString("utf8");
+      const signature = await custody.signCanonical(input);
+      return new Response(JSON.stringify({ data: { signature: "vault:v1:" + signature.toString("base64") } }),
+        { headers: { "content-type": "application/json" } });
+    });
+    const approvalDecision = await createProductionApprovalClient({
+      endpoint: "https://approval.example.invalid/decisions", expectedIssuer: "isolated-fixture-policy",
+      trustedAuthorityFingerprints: [authority.fingerprint], getToken: async () => "approval-fixture-token",
+    }).requestApproval(request);
     const execution:ExecutionRequestDocument={
       schema:"agentproof.protocol.execution-request",schemaVersion:"1.0.0",actionType:"agentproof.repository_patch.v1",
       correlationId:prepared.correlationId,transactionId:prepared.transactionId,stateDirectory:prepared.stateDirectory,
-      idempotencyKey:"provider-once",requiredAuthorityEnvironment:"development",trustedAuthorityFingerprints:[authority.fingerprint],approvalDecision,
+      idempotencyKey:"provider-once",requiredAuthorityEnvironment:"production",trustedAuthorityFingerprints:[authority.fingerprint],approvalDecision,
     };
-    const custody=signingProviderFromPrivateKeyPem("external-provider-fixture",key.privateKeyPem);
-    let available=false,signatures=0;
-    // Only the provider fixture owns signing material. The caller sees the public interface.
-    const provider:SigningProvider={
-      keyId:()=>custody.keyId(),publicKeyPem:()=>custody.publicKeyPem(),
-      async signCanonical(payload) { if(!available) throw new Error("fixture_provider_unavailable");signatures++;return custody.signCanonical(payload); },
-    };
-    await assert.rejects(executeApprovedTransaction(execution,{receiptSigner:provider}),/fixture_provider_unavailable/);
+    const provider = createVaultTransitSigningProvider({
+      address: "https://vault.example.invalid", mountPath: "transit", keyName: "receipt",
+      keyVersion: 1, keyId: "external-provider-fixture", publicKeyPem: key.publicKeyPem,
+      trustedSignerFingerprint: key.fingerprint, getToken: async () => "fixture-token",
+    });
+    const developmentDecision=createDevelopmentApprovalDecision({request,decision:"approved",issuer:"test-development",privateKeyPem:authority.privateKeyPem,developmentMode:true});
+    await assert.rejects(executeApprovedTransaction({...execution,approvalDecision:developmentDecision},{receiptSigner:provider}),/Approval does not match/);
+    assert.equal(await readFile(path.join(repo,"a.txt"),"utf8"),"before\n");
+    await assert.rejects(executeApprovedTransaction(execution,{receiptSigner:provider}),/provider_unavailable/);
     assert.equal(await readFile(path.join(repo,"a.txt"),"utf8"),"after\n");
     const query={stateDirectory:prepared.stateDirectory,transactionId:prepared.transactionId,correlationId:prepared.correlationId};
     assert.equal((await getTransactionStatus(query)).state,"verified");
     available=true;
-    const receipt=await reconcileRepositoryPatch({...query,authorityEnvironment:"development"},{receiptSigner:provider});
+    const receipt=await reconcileRepositoryPatch({...query,authorityEnvironment:"production"},{receiptSigner:provider});
     assert.ok("payload" in receipt);
-    assert.equal(verifyReceipt({document:receipt,trustedSignerFingerprints:[key.fingerprint],requiredAuthorityEnvironment:"development"}).trusted,true);
-    assert.equal(verifyReceipt({document:receipt,trustedSignerFingerprints:[key.fingerprint],requiredAuthorityEnvironment:"production"}).trusted,false);
+    assert.equal(verifyReceipt({document:receipt,trustedSignerFingerprints:[key.fingerprint],requiredAuthorityEnvironment:"production"}).trusted,true);
+    assert.equal(verifyReceipt({document:receipt,trustedSignerFingerprints:[key.fingerprint],requiredAuthorityEnvironment:"development"}).trusted,false);
     const retry=await executeApprovedTransaction(execution,{receiptSigner:provider});
     assert.deepEqual(retry,receipt);assert.equal(signatures,1);
     assert.equal(await readFile(path.join(repo,"a.txt"),"utf8"),"after\n");

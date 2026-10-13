@@ -105,6 +105,17 @@ console.log(JSON.stringify({rootExports:Object.keys(sdk).length,developmentExpor
     const file = path.join(consumer, "exports.mjs"); await writeFile(file, probe);
     report.exports = JSON.parse(await run(process.execPath, [file]));
   });
+  if (options["--candidate-tarball"]) {
+    await check("production_provider_exports_inert", async () => {
+      const probe = `import assert from "node:assert/strict";
+globalThis.fetch = () => { throw new Error("unexpected_network_on_import"); };
+const providers = await import("@oneclicksystems/agentproof/production-providers");
+assert.deepEqual(Object.keys(providers).sort(), ["ProductionProviderError","createProductionApprovalClient","createVaultTransitSigningProvider"].sort());
+for (const name of Object.keys(providers)) assert.equal(typeof providers[name], "function");`;
+      const file = path.join(consumer, "providers.mjs"); await writeFile(file, probe);
+      await run(process.execPath, [file]);
+    });
+  }
   await check("disposable_repository", async () => {
     await run("git", ["init", "-b", "main", repo]);
     await run("git", ["-C", repo, "config", "user.email", "acceptance@example.invalid"]);

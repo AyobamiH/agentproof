@@ -17,7 +17,7 @@ Only `agentproof.repository_patch.v1`: an allowlisted patch against an exact cle
 
 ## Known limitations
 
-The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem. Linux, macOS, and WSL2 are assumed; native Windows is unvalidated. State/signing are local. There is no production authority/KMS/HSM, OS-enforced executor sandbox, hosted coordinator, or distributed atomic commit. Explicit signer pinning is required. Development authority is not production authority.
+The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem. Linux, macOS, and WSL2 are assumed; native Windows is unvalidated. Published RC6 state/signing are local. The current source adds optional external-provider clients, but no production authority/KMS/HSM deployment, OS-enforced executor sandbox, hosted coordinator, or distributed atomic commit is established. Explicit signer pinning is required. Development authority is not production authority.
 
 ## Active gate
 
@@ -48,3 +48,24 @@ The existing injected signing-provider boundary now has outage/reconciliation/re
 coverage. [Production provider readiness](protocols/production-provider-readiness.md)
 records the required external custody, policy, trust and canary evidence. There is
 still no activated production provider or additional runtime action.
+
+## External provider clients — 13 October 2026
+
+The unreleased source now provides a separate `production-providers` SDK subpath:
+a version-pinned Vault Transit Ed25519 signer and an external production-approval
+client. Each requires explicit HTTPS configuration, short-lived credential callbacks
+and independently provisioned trust pins. Returned signatures and exact request
+bindings are validated locally; no approval is minted by the client.
+
+Conformance fixtures cover trust, malformed/oversized responses, redacted failures,
+deadlines, credential races and key rotation. The real signer adapter also passes
+durable outage/reconciliation/idempotency coverage against a disposable mock service.
+These are engineering observations, not production deployment or adoption evidence.
+See [provider contract and threat boundaries](protocols/production-provider-adapters.md).
+
+No live provider endpoint, key, service IAM or production canary is configured.
+The authenticated repository inspection found no Actions secret or variable names;
+the terminal had no Vault/AWS/GCP/Azure provider CLI available. Those observations
+describe this task's access, not an exhaustive inventory of the owner's accounts.
+RC6 publication and its immutable artifact remain unchanged. A future package version
+must use the guarded staging/maintainer-2FA procedure.
