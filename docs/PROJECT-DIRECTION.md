@@ -6,7 +6,7 @@ Its first commercial wedge is a verified local repository patch: an agent prepar
 
 ## What is proven
 
-The local `agentproof.repository_patch.v1` lifecycle, durable SQLite state, approval replay protection, separate executor, deterministic reconciliation, independent verification, Receipt V2, append-only compensation successors, CLI/SDK package, and development-authority separation have passed automated and isolated agent validation. RC5 moves that unchanged capability into its standalone source boundary. Its GitHub and npm prereleases are published, with matching artifact bytes and a verified clean consumer. RC6 is the current source release; its npm publication remains separately approval-bound. See [Current status](CURRENT-STATUS.md) for version-specific evidence.
+The local `agentproof.repository_patch.v1` lifecycle, durable SQLite state, approval replay protection, separate executor, deterministic reconciliation, independent verification, Receipt V2, append-only compensation successors, CLI/SDK package, and development-authority separation have passed automated and isolated agent validation. RC5 moves that unchanged capability into its standalone source boundary. Its GitHub and npm prereleases are published, with matching artifact bytes and a verified clean consumer. RC6 is the current prerelease, published on GitHub and npm under `next` after maintainer 2FA approval, with matching artifact bytes and clean-install verification. See [Current status](CURRENT-STATUS.md) for version-specific evidence.
 
 ## Non-negotiable boundaries
 
@@ -20,7 +20,7 @@ The local `agentproof.repository_patch.v1` lifecycle, durable SQLite state, appr
 
 ## Now and next
 
-Finish the standalone public prerelease, then measure ten independent agent installations and successful verified repository changes. Repair portability and documentation defects found through adoption. The next security milestone is a production authority/signing provider. Add one more action only when usage evidence demands it.
+The standalone public prerelease is complete. Measure ten independent agent installations and successful verified repository changes using the [adoption validation tools](adoption/README.md). Repair portability and documentation defects found through adoption. The next security milestone is a production authority/signing provider. Add one more action only when usage evidence demands it.
 
 Do not build a dashboard, payments, marketplace, broad agent operating system, connector catalogue, MCP directory, or speculative action set yet. OpenClaw is the first adapter and dogfood environment, not the product boundary.
 

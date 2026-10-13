@@ -35,3 +35,16 @@ AgentProof has not enabled those runtime actions: production authority/signing,
 action-specific threat models, deterministic provider reconciliation, OpsTruth
 verification fixtures, and exact canaries remain gates. The candidate adapter
 boundary is documented in `docs/protocols/donestate-lifecycle-adapter.md`.
+
+## Adoption tooling — 13 October 2026
+
+Source-maintainer tooling now provides a pinned RC6 clean-install acceptance runner,
+a structured installation-observation schema and a fail-closed aggregation command.
+The runner labels automated evidence explicitly and gives it zero independent-adoption
+credit. See [collection instructions](adoption/README.md). These tools are not in the
+already-published RC6 tarball; this change does not republish or move npm tags.
+
+The existing injected signing-provider boundary now has outage/reconciliation/retry
+coverage. [Production provider readiness](protocols/production-provider-readiness.md)
+records the required external custody, policy, trust and canary evidence. There is
+still no activated production provider or additional runtime action.

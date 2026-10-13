@@ -7,3 +7,12 @@ For each installation preserve raw observations separately from conclusions and 
 Success means unfamiliar agents install without OpenClaw knowledge, complete the repository-patch lifecycle, independently verify the expected receipt, understand the five roles, and encounter no critical security or mutation ambiguity. Automated speed is engineering evidence, not human adoption evidence.
 
 After ten installations, aggregate only evidence-backed patterns. Repair portability/docs first. Do not add another action until repeated users demand the same action and its independent verification can be specified deterministically.
+
+## Collection and acceptance tooling
+
+Use the [source-only acceptance runner and observation validator](adoption/README.md)
+to collect repeatable engineering evidence and validate actual installation records.
+The record schema captures every observation above; aggregation deduplicates
+participants and separates engineering tests from candidate independent installs.
+Ten supplied records still require an independence review. No independent participant
+records have been added by this implementation.
