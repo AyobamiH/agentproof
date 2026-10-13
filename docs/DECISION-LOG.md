@@ -1,5 +1,14 @@
 # Decision log
 
+## 2026-10-13 — Measure adoption without manufacturing product authority
+
+- **Context:** RC6 distribution is complete, but README/source-direction text still described publication as pending. Ten independent installations and production provider evidence remain absent.
+- **Decision:** correct consumption instructions; add source-only pinned release acceptance, a strict installation record schema, and an aggregator that separates engineering evidence and requires review of participant independence.
+- **Evidence:** exact installed RC6 lifecycle and public-export checks; negative trust cases; focused record-validation tests; injected-signer outage/reconciliation/retry coverage.
+- **Consequences:** maintainers can repeat acceptance and collect comparable observations. No runtime action, signing authority, hosted coordinator, npm tag or previously published artifact changes.
+- **Reconsider when:** actual independent installations identify a repair, or an explicit external signing/approval provider supplies custody, policy, trust and canary evidence.
+
+
 ## 2026-08-28 — Record DoneState lifecycle candidates without claiming runtime support
 
 - **Context:** Proof & State requires AgentProof evidence for future merge, deployment, and release actions.

@@ -13,10 +13,23 @@ Start with [Project direction](docs/PROJECT-DIRECTION.md). Security decisions li
 - Git and a local filesystem
 - Linux, macOS, or WSL2; native Windows is not yet validated
 
+## Install the published prerelease
+
+RC6 is published on npm under `next`; `latest` remains RC5. Pin the exact version
+for reproducibility:
+
+```sh
+npm install --save-exact @oneclicksystems/agentproof@0.1.0-rc.6
+```
+
+Release digests and registry evidence are recorded in
+[RC6 reconciliation](docs/evidence/npm-rc6-registry-reconciliation.md). Maintainers
+can repeat the clean-install lifecycle with the source-only
+[acceptance runner](docs/adoption/README.md).
+
 ## Reproducible source consumption
 
-Until a registry prerelease is published, consumers may pin the package to an
-exact repository commit. The `prepare` script builds the public `dist/`
+Consumers may alternatively pin the package to an exact repository commit. The `prepare` script builds the public `dist/`
 exports during Git dependency installation, so a clean consumer does not
 depend on an unpublished registry tarball or a maintainer's local cache.
 
@@ -31,7 +44,7 @@ published.
 
 ## CLI quickstart
 
-This complete development-only example uses a disposable Git repository. It requires only this README and the packed tarball. All state, keys, and evidence stay under the temporary directory.
+This complete development-only example uses a disposable Git repository. It installs the exact published RC6 package. All state, keys, and evidence stay under the temporary directory.
 
 ```sh
 LAB="$(mktemp -d)"
@@ -43,10 +56,12 @@ git -C "$REPO" config user.email agentproof@example.invalid
 git -C "$REPO" config user.name "AgentProof Quickstart"
 printf 'before\n' > "$REPO/protected.txt"
 git -C "$REPO" add protected.txt
-git -C "$REPO" commit -m baseline
+git -C "$REPO" -c commit.gpgsign=false commit -m baseline
 
+mkdir -p "$LAB/consumer"
+cd "$LAB/consumer"
 npm init -y
-npm install /absolute/path/to/oneclicksystems-agentproof-0.1.0-rc.6.tgz
+npm install --save-exact @oneclicksystems/agentproof@0.1.0-rc.6
 AP=./node_modules/.bin/agentproof
 AUTH=./node_modules/.bin/agentproof-dev-authority
 
@@ -115,7 +130,7 @@ RECEIPT_FP="$(node -e 'const f=require(process.argv[1]);process.stdout.write(f.f
 
 # Exactly-once retry returns the original signed receipt.
 "$AP" execute --input "$LAB/execution.json" --receipt-key "$LAB/receipt.pem" > "$LAB/receipt-retry.json"
-sha256sum "$LAB/receipt.json" "$LAB/receipt-retry.json"
+node -e 'const fs=require("fs"),c=require("crypto");for(const f of process.argv.slice(1))console.log(c.createHash("sha256").update(fs.readFileSync(f)).digest("hex"));' "$LAB/receipt.json" "$LAB/receipt-retry.json"
 
 node - "$LAB/prepared.json" > "$LAB/status-query.json" <<'NODE'
 const p = require(process.argv[2]);

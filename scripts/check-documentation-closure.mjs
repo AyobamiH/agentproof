@@ -11,3 +11,13 @@ for (const subject of ["2ec72f15a50881104ad03d92cde133d7a2351685", "0.1.0-rc.6",
   if (!status.includes(subject)) throw new Error(`current status is missing required subject: ${subject}`);
 }
 console.log("documentation closure: ok");
+
+for (const file of ["README.md", "docs/PROJECT-DIRECTION.md"]) {
+  const text = await readFile(new URL("../" + file, import.meta.url), "utf8");
+  for (const stale of ["Until a registry prerelease is published", "npm publication remains separately approval-bound", "Finish the standalone public prerelease"]) {
+    if (text.includes(stale)) throw new Error(file + ": stale distribution state");
+  }
+}
+for (const file of ["docs/adoption/README.md", "docs/adoption/install-record.schema.json", "docs/protocols/production-provider-readiness.md"]) {
+  await access(new URL("../" + file, import.meta.url));
+}

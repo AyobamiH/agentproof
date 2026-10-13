@@ -11,17 +11,42 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: 22
+          - os: ubuntu-latest
+            node: 24
+          - os: macos-latest
+            node: 24
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Use Node.js 24
+      - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ matrix.node }}
           cache: npm
       - name: Install dependencies
         run: npm ci
       - name: Validate implementation, documentation, and package
         run: npm run check
+      - name: Accept a fresh installed source candidate
+        shell: bash
+        run: |
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP"
+          node scripts/acceptance.mjs \
+            --candidate-tarball "$RUNNER_TEMP/oneclicksystems-agentproof-0.1.0-rc.6.tgz" \
+            --source-commit "$GITHUB_SHA" \
+            --output "$RUNNER_TEMP/agentproof-acceptance.json"
+      - name: Retain engineering acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-${{ matrix.os }}-node${{ matrix.node }}
+          path: ${{ runner.temp }}/agentproof-acceptance.json
+          if-no-files-found: ignore

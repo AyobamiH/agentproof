@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add source-only clean-install acceptance and structured independent-adoption observation/aggregation tools.
+- Cover injected signer outage recovery without repeated mutation or production-authority claims.
+- Correct RC6 registry installation and standalone harness documentation.
+- Expand clean-consumer validation to Linux (Node 22/24) and macOS (Node 24).
+- Refresh the development-only fast-uri lockfile dependency to its patched compatible release.
+
+
 ## 0.1.0-rc.6
 
 RC6 preserves the proven `agentproof.repository_patch.v1` runtime and Receipt V2 trust boundary while making the standalone repository genuinely consumable and releasable.

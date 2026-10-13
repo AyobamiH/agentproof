@@ -30,12 +30,14 @@ Commits, pushes, tags, branch deletion, remote operations, shell command strings
 
 ## Local harness
 
-Build AgentProof, then run the repository-patch harness test from `orchestrator`:
+From the standalone AgentProof checkout, run:
 
 ```sh
-npm --prefix agentproof run build
-cd orchestrator
-npx vitest run test/agentproof-repository-patch.test.ts --reporter=verbose
+npm ci
+npm test
 ```
+
+To exercise the published RC6 CLI and SDK from a clean installed consumer, use
+the [acceptance runner](../adoption/README.md).
 
 All harness repositories, SQLite databases, and signing keys are temporary.
