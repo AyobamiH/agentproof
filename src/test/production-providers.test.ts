@@ -190,6 +190,9 @@ test("approval input validation and trust configuration fail before networking",
     { unexpected: true }, { nonce: "" }, { expiresAt: "2020-01-01T00:00:00Z" }]) {
     await assert.rejects(client.requestApproval({ ...request, ...changes }), isCode("provider_input_invalid"));
   }
+  const prototypeKey = JSON.parse(JSON.stringify(request));
+  Object.defineProperty(prototypeKey.binding, "__proto__", { value: null, enumerable: true });
+  await assert.rejects(client.requestApproval(prototypeKey), isCode("provider_input_invalid"));
   assert.equal(calls, 0);
 });
 

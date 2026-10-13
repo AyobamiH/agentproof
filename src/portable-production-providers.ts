@@ -135,6 +135,8 @@ export function createProductionApprovalClient(options: ProductionApprovalOption
     async requestApproval(request: PortableApprovalRequestDocument) {
       let body: string, snapshot: PortableApprovalRequestDocument;
       try {
+        // Validate own keys before canonicalization can normalize any caller-supplied object.
+        validateRequest(request);
         body = stableJson(request);
         requireProvider(Buffer.byteLength(body) <= MAX_PROVIDER_BYTES, "provider_input_invalid");
         snapshot = JSON.parse(body);
