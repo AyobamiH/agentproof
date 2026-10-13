@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile, realpath } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -25,7 +25,7 @@ async function fixture(options: {
   faults?: { afterMutation?: () => void; afterVerification?: () => void };
   compensationWriter?: (transaction: AgentProofTransaction) => Promise<void>;
 } = {}) {
-  const projectRoot = await mkdtemp(path.join(os.tmpdir(), "agentproof-durable-project-"));
+  const projectRoot = await realpath(await mkdtemp(path.join(os.tmpdir(), "agentproof-durable-project-")));
   const stateRoot = await mkdtemp(path.join(os.tmpdir(), "agentproof-durable-state-"));
   await mkdir(path.join(projectRoot, "config"));
   await writeFile(path.join(projectRoot, "config", "service.json"), "before\n");

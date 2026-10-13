@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile, realpath } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -32,7 +32,7 @@ const evidence: ReadOnlyEvidence[] = [
 ];
 
 async function fixture(executor?: FileExecutor) {
-  const root = await mkdtemp(path.join(os.tmpdir(), "agentproof-test-root-"));
+  const root = await realpath(await mkdtemp(path.join(os.tmpdir(), "agentproof-test-root-")));
   const storeRoot = await mkdtemp(path.join(os.tmpdir(), "agentproof-test-store-"));
   await mkdir(path.join(root, "config"));
   await writeFile(path.join(root, "config", "service.json"), '{"enabled":false}\n');
