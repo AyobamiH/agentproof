@@ -26,6 +26,24 @@ const report = { schema: "agentproof.production-provider-canary.v1", status: "FA
   sourceCommit: process.env.GITHUB_SHA, workflowRun: `https://github.com/AyobamiH/agentproof/actions/runs/${runId}`,
   authorityScope: "one disposable repository-patch in a pinned workflow", independentAdoptionCredit: 0,
   custody: "cloudflare-encrypted-worker-secret", hardwareCustodyProven: false, checks: [] };
+// Record bounded response metadata without recording tokens or response bodies.
+// No extra provider requests are issued: an ambiguous effect is never retried for diagnostics.
+const underlyingFetch = globalThis.fetch;
+globalThis.fetch = async (input, init) => {
+  const response = await underlyingFetch(input, init);
+  const endpoint = String(input);
+  if (init?.method === "POST" && (endpoint === trust.approval.endpoint || endpoint === trust.receipt.endpoint)) {
+    const entry = { role: endpoint === trust.approval.endpoint ? "approval" : "receipt", httpStatus: response.status };
+    if (response.status !== 200) {
+      try {
+        const value = await response.clone().json();
+        if (typeof value?.error === "string" && /^[a-z_]{2,64}$/.test(value.error)) entry.errorCode = value.error;
+      } catch { /* Deliberately discard untrusted error bodies. */ }
+    }
+    (report.providerResponses ??= []).push(entry);
+  }
+  return response;
+};
 let created = false;
 const check = async (name, fn) => {
   report.activeCheck = name;
@@ -121,6 +139,7 @@ try {
   report.failure = { code: /^[a-z_]+$/.test(error?.code ?? "") ? error.code : "canary_failed" };
   process.exitCode = 1;
 } finally {
+  globalThis.fetch = underlyingFetch;
   if (created) await rm(root, { recursive: true, force: true });
   report.completedAt = new Date().toISOString();
   await reportHandle.writeFile(JSON.stringify(report, null, 2) + "\n"); await reportHandle.close();
