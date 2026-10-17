@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentproof.dev/schemas/candidate/release-v1-approval.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "actionType",
+    "subjectDigest",
+    "transactionId",
+    "nonce",
+    "decision",
+    "environment",
+    "issuer",
+    "decidedAt",
+    "expiresAt",
+    "authorityPublicKeyPem",
+    "signatureBase64"
+  ],
+  "properties": {
+    "schema": {
+      "const": "agentproof.release.approval.v1"
+    },
+    "actionType": {
+      "const": "agentproof.release.v1"
+    },
+    "subjectDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "transactionId": {
+      "type": "string",
+      "pattern": "^[0-9a-f-]{36}$"
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "decision": {
+      "enum": [
+        "approved",
+        "denied"
+      ]
+    },
+    "environment": {
+      "enum": [
+        "production",
+        "development"
+      ]
+    },
+    "issuer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decidedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "authorityPublicKeyPem": {
+      "type": "string",
+      "minLength": 1
+    },
+    "signatureBase64": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+/]{86}==$"
+    }
+  }
+}

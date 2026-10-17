@@ -98,3 +98,13 @@
 - **Evidence:** product research, RC limitations, and absence of external adoption data.
 - **Consequences:** near-term work focuses on distribution, comprehension, and production authority.
 - **Reconsider when:** repeated users request the same action with a deterministic verification contract.
+
+
+## 2026-10-17 — One bounded release effect before wider consequence types
+
+- **Context:** The prior 17/17 production canary proved only a local repository patch. The DoneState milestone explicitly selected a release candidate, but neither independent adoption nor real release authority was established.
+- **Decision:** Implement `agentproof.release.v1` as source-only and narrower than general release creation: publish one existing GitHub draft prerelease with an exact numeric repository/release identity, tag commit, package asset and provenance digest. Preserve the already published RC6 runtime and do not repurpose the repository-patch signer or approval policy.
+- **Alternatives:** grant the patch Worker general GitHub rights; create arbitrary tags/assets; publish npm automatically; treat an internal test as independent adoption.
+- **Evidence:** repeatable local GitHub-provider fixtures, adversarial authority and recovery tests, generated strict candidate schemas; production release and OpsTruth-specific live canaries remain separate gates.
+- **Consequences:** a testable action contract without premature production authority. The outcome is not atomic across GitHub/SQLite, is not automatically compensable, and requires separately scoped global fencing, signing, byte-level OpsTruth verification and a disposable live canary before any DoneState terminal VERIFIED result.
+- **Reconsider when:** exact production release and independent verifier evidence justify a new published package version under the staged maintainer-2FA process.

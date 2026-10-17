@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a source-only, narrowly pinned `agentproof.release.v1` draft-publication transaction candidate with SQLite single-effect intent, no automatic mutation retries, a fixed GitHub API adapter, separately signed approval, release-specific Receipt V2 trust validation, strict generated schemas and adversarial fixtures. This is **not** published or granted runtime authority.
+
 - Add optional explicit Vault Transit Ed25519 signing and external production-approval clients with pinned trust, bounded HTTPS and no credential persistence.
 - Verify provider wire failures, signature/key-version rejection and real-adapter outage recovery; document the separate production activation gate.
 

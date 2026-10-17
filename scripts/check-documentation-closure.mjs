@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { access, readFile } from "node:fs/promises";
 
 for (const file of ["README.md", "CHANGELOG.md", "docs/CURRENT-STATUS.md", "docs/ROADMAP.md", "docs/DECISION-LOG.md", "docs/protocols/donestate-lifecycle-adapter.md", "docs/NPM-RELEASE.md", "docs/releases/0.1.0-rc.6.md", "docs/evidence/npm-rc6-registry-reconciliation.md", ".github/workflows/release-prerelease.yml", ".github/workflows/release-github-prerelease.yml", "AGENTS.md"]) {
@@ -21,3 +22,6 @@ for (const file of ["README.md", "docs/PROJECT-DIRECTION.md"]) {
 for (const file of ["docs/adoption/README.md", "docs/adoption/install-record.schema.json", "docs/protocols/production-provider-readiness.md"]) {
   await access(new URL("../" + file, import.meta.url));
 }
+
+for (const file of ["docs/actions/release-v1-candidate.md", "schemas/release-v1-subject.schema.json", "schemas/release-v1-approval.schema.json", "schemas/release-v2-receipt.schema.json"]) await access(new URL("../" + file, import.meta.url));
+execFileSync(process.execPath, [new URL("./generate-release-v1-schemas.mjs", import.meta.url).pathname, "--check"], { timeout: 30000, stdio: "pipe" });
