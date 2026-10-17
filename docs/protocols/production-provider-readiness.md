@@ -1,6 +1,6 @@
 # Production provider readiness
 
-Status: explicit SDK adapters and engineering coverage in unreleased source; no production provider activated.
+Status: external SDK adapters and a narrow hosted canary implementation in unreleased source. Separate Cloudflare approval/signing services are provisioned disabled; live activation evidence is still required.
 
 The portable SDK already accepts a `SigningProvider` with asynchronous `keyId()`,
 `publicKeyPem()` and `signCanonical(payload)`. An integration can retain signing
@@ -37,12 +37,7 @@ responses. No live Vault or approval service is inferred from these tests.
 
 ## Unresolved external inputs
 
-No live production provider endpoint, account/project, key identifier, approved signer policy,
-out-of-band trust fingerprint or authenticated canary target is configured in this
-repository. Selecting and operating those resources requires real infrastructure
-and authority evidence. The repository must not invent them or create a hidden
-local production key. This is an authentication and custody boundary, not a missing
-npm release.
+The [hosted canary contract](hosted-production-canary.md) records the selected Cloudflare account, separate software-custodied keys, public trust pins and exact GitHub workload policy. Configuration defaults to disabled. Its single disposable target does not establish a general-purpose production authority, hardware custody or permission for DoneState consequences. Production keys must never be fabricated from development fixtures.
 
 DoneState merge, deployment and release remain separate candidates in the
 [adapter boundary](donestate-lifecycle-adapter.md). Each needs its own threat model,

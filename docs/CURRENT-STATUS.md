@@ -17,7 +17,7 @@ Only `agentproof.repository_patch.v1`: an allowlisted patch against an exact cle
 
 ## Known limitations
 
-The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem. Linux, macOS, and WSL2 are assumed; native Windows is unvalidated. Published RC6 state/signing are local. The current source adds optional external-provider clients, but no production authority/KMS/HSM deployment, OS-enforced executor sandbox, hosted coordinator, or distributed atomic commit is established. Explicit signer pinning is required. Development authority is not production authority.
+The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem. Linux, macOS, and WSL2 are assumed; native Windows is unvalidated. Published RC6 state/signing are local. The current source adds optional external-provider clients, and a narrowly scoped hosted provider canary. No general-purpose authority, KMS/HSM custody, OS-enforced executor sandbox, hosted coordinator product, or distributed atomic commit is established. Explicit signer pinning is required. Development authority is not production authority.
 
 ## Active gate
 
@@ -69,3 +69,7 @@ the terminal had no Vault/AWS/GCP/Azure provider CLI available. Those observatio
 describe this task's access, not an exhaustive inventory of the owner's accounts.
 RC6 publication and its immutable artifact remain unchanged. A future package version
 must use the guarded staging/maintainer-2FA procedure.
+
+## Hosted provider bootstrap — 15 October 2026
+
+Two isolated Cloudflare Workers have been provisioned with separate encrypted signing secrets and reviewed public pins. They remain disabled until the exact merged source and GitHub OIDC identity are explicitly activated. The production-provider workflow exercises a single disposable repository patch, lost-response reconciliation, retry protection and signed compensation. See [policy, custody, deployment and rollback](protocols/hosted-production-canary.md). Live acceptance evidence will be appended after activation; bootstrap is not a successful canary. A public independent-installation issue form now accepts real observations; no participant is inferred or counted from these engineering runs. DoneState consequence actions remain separate candidates.

@@ -1,0 +1,41 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agentproof-receipt",
+  "account_id": "6ddcbcb8474f1a7e460b2f0aabec0e2f",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-10-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "LEDGER",
+        "class_name": "ProviderLedger"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "ProviderLedger"
+      ]
+    }
+  ],
+  "vars": {
+    "ROLE": "receipt",
+    "ENABLED": "false",
+    "TRUSTED_SOURCE_SHA": "0000000000000000000000000000000000000000",
+    "AUDIENCE": "https://agentproof-receipt.woeinvests.workers.dev",
+    "SIGNING_PUBLIC_KEY_PEM": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAj3NLOVY3ongRaBbYiedcmLug2ZW1e89OLDh7Ou+Dmn8=\n-----END PUBLIC KEY-----\n",
+    "SIGNER_FINGERPRINT": "sha256:1a0e9ff45192afbce25e695bbb0a7d6443f72ee194bf0353f8ea7f03e3f79c2b",
+    "AUTHORITY_PUBLIC_KEY_PEM": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAStpTL3KqL0Bu5LlShZ7DNmJB+5jSElBVmv14TpOZ4g0=\n-----END PUBLIC KEY-----\n",
+    "AUTHORITY_FINGERPRINT": "sha256:50004e6c8b5e5d5b53c276e9f4b045ea1cfee49a605e4bc9ac2ca0a7a8f715b0"
+  },
+  "observability": {
+    "enabled": false
+  }
+}
