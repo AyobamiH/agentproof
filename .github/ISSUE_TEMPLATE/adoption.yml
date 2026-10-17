@@ -1,0 +1,32 @@
+name: Independent installation observation
+description: Record an actual first installation, including failures and missing observations.
+title: "[Adoption] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Follow docs/adoption/README.md and attach one install-record.schema.json observation with raw evidence references and SHA-256 hashes.
+        Automated checks and maintainer dogfooding do not count as independent adoption.
+        Do not include credentials, private signing keys, personal contact details or private source code.
+  - type: textarea
+    id: observation
+    attributes:
+      label: Observation JSON
+      description: Use NOT_OBSERVED, null or not_asked for facts you did not observe. Include failures and assistance.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: relationship
+    attributes:
+      label: Relationship and evidence
+      description: Describe prior familiarity or affiliation and link to sanitised raw evidence. A submission is not automatically counted.
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Public evidence
+      options:
+        - label: This is an actual installation attempt and I have reviewed the attached material for secrets and permission to share publicly.
+          required: true

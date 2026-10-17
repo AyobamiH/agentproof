@@ -81,3 +81,7 @@ candidate installations require all lifecycle observations and five-role
 comprehension with no critical ambiguity. The report still requires an
 independence review even at ten; supplied JSON cannot prove participant identity.
 It does not fetch evidence references or activate production authority or actions.
+
+## Public intake
+
+Submit an actual sanitised observation through the repository Independent installation observation issue form. The maintainer must preserve the issue URL, numeric GitHub author ID, observation bytes/hash and evidence references, check affiliation and duplication, and validate the record with the aggregation tool. Submission or an unfamiliar username alone does not establish independence. Automated workflow runs and repositories controlled by the maintainer remain engineering evidence. No credentials or private customer source should be submitted.

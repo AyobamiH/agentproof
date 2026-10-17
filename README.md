@@ -27,6 +27,8 @@ Release digests and registry evidence are recorded in
 can repeat the clean-install lifecycle with the source-only
 [acceptance runner](docs/adoption/README.md).
 
+After a real first installation, developers can [submit an independent installation observation](https://github.com/AyobamiH/agentproof/issues/new?template=adoption.yml) using the [sanitised evidence guide](docs/adoption/README.md). Automated tests, maintainer dogfooding and GitHub issue submissions by themselves do not count as independently verified adoption.
+
 ## Reproducible source consumption
 
 Consumers may alternatively pin the package to an exact repository commit. The `prepare` script builds the public `dist/`
