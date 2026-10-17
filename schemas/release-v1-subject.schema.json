@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentproof.dev/schemas/candidate/release-v1-subject.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "provider",
+    "owner",
+    "repository",
+    "ownerId",
+    "repositoryId",
+    "releaseId",
+    "tagName",
+    "tagCommit",
+    "packageAssetId",
+    "packageAssetName",
+    "packageDigest",
+    "provenanceAssetId",
+    "provenanceDigest",
+    "prerelease",
+    "makeLatest"
+  ],
+  "properties": {
+    "schema": {
+      "const": "agentproof.release.subject.v1"
+    },
+    "provider": {
+      "const": "github"
+    },
+    "owner": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9-]{1,39}$"
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,100}$"
+    },
+    "ownerId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "repositoryId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "releaseId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "tagName": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$"
+    },
+    "tagCommit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "packageAssetId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "packageAssetName": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "packageDigest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "provenanceAssetId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "provenanceDigest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "prerelease": {
+      "const": true
+    },
+    "makeLatest": {
+      "const": false
+    }
+  }
+}

@@ -9,7 +9,7 @@ const addFormats = require("ajv-formats").default as (ajv: unknown) => void;
 import { validateReceiptV2, verifyReceiptV2 } from "../receipt-v2.js";
 
 test("every shipped schema is strict JSON without unconstrained properties",async()=>{
-  const names=["repository-patch-request","prepared-repository-patch","approval-request","approval-decision","execution-request","signed-receipt","receipt-verification-result","transaction-status","agent-proof-error"];
+  const names=["repository-patch-request","prepared-repository-patch","approval-request","approval-decision","execution-request","signed-receipt","receipt-verification-result","transaction-status","agent-proof-error","release-v1-subject","release-v1-approval","release-v2-receipt"];
   for(const name of names){ const raw=await readFile(path.resolve("schemas",`${name}.schema.json`),"utf8"); const schema=JSON.parse(raw); assert.equal(schema.additionalProperties,false,name); assert.equal(raw.includes('"properties": {}'),false,name); }
 });
 

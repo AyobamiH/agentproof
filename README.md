@@ -176,6 +176,12 @@ import {
 
 Every operation receives an explicit absolute state directory. `reconcileRepositoryPatch` re-observes an interrupted execution and signs only after verified state; compensation after a receipt requires an authenticated successor receipt. Imports perform no network calls, filesystem discovery, environment scanning, or background startup. See [Verified repository patch v1](docs/actions/repository-patch-v1.md) and [Signed receipt V2](docs/protocols/signed-receipt-v2.md).
 
+## Release v1 source candidate (not published or enabled)
+
+A narrowly scoped [release v1 source candidate](docs/actions/release-v1-candidate.md) can publish one pre-existing GitHub draft prerelease after a separately signed exact-subject approval, with durable single-effect intent and a distinct domain-separated Receipt V2 verifier. It has candidate schemas and fixture tests only; it is **not part of published RC6's public CLI/SDK**, does not authorise DoneState consequences, and does not reuse the live repository-patch Worker. No production release or independent OpsTruth approval is claimed.
+
+The [independent-adoption tracker](https://github.com/AyobamiH/agentproof/issues/14) remains open for genuine outside installation observations. No synthetic canary counts as an external adopter.
+
 ## External provider integration (unreleased)
 
 The source SDK now includes the explicit `production-providers` subpath: a pinned

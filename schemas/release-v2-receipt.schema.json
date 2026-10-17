@@ -1,0 +1,413 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentproof.dev/schemas/candidate/release-v2-receipt.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "payload",
+    "proof"
+  ],
+  "properties": {
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaId",
+        "schemaVersion",
+        "receiptFormatVersion",
+        "actionType",
+        "receiptId",
+        "issuedAt",
+        "transactionId",
+        "nonce",
+        "idempotencyKey",
+        "subject",
+        "subjectDigest",
+        "approval",
+        "approvalDigest",
+        "intentDigest",
+        "effect",
+        "attemptedAt",
+        "verifiedAt",
+        "before",
+        "after",
+        "verificationState",
+        "independentOutcomeVerified",
+        "compensationState",
+        "signerRole",
+        "signingPolicyId",
+        "predecessorPayloadDigest"
+      ],
+      "properties": {
+        "schemaId": {
+          "const": "agentproof.signed-receipt.v2"
+        },
+        "schemaVersion": {
+          "const": "2.0.0"
+        },
+        "receiptFormatVersion": {
+          "const": "v2"
+        },
+        "actionType": {
+          "const": "agentproof.release.v1"
+        },
+        "receiptId": {
+          "type": "string",
+          "pattern": "^[0-9a-f-]{36}$"
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "transactionId": {
+          "type": "string",
+          "pattern": "^[0-9a-f-]{36}$"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        },
+        "subject": {
+          "$ref": "#/$defs/subject"
+        },
+        "subjectDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "approval": {
+          "$ref": "#/$defs/approval"
+        },
+        "approvalDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "intentDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "effect": {
+          "const": "publish_exact_existing_draft_prerelease"
+        },
+        "attemptedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "verifiedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "before": {
+          "$ref": "#/$defs/observation"
+        },
+        "after": {
+          "$ref": "#/$defs/observation"
+        },
+        "verificationState": {
+          "const": "verified_provider_readback"
+        },
+        "independentOutcomeVerified": {
+          "const": false
+        },
+        "compensationState": {
+          "const": "not_supported"
+        },
+        "signerRole": {
+          "const": "independent_receipt_signer"
+        },
+        "signingPolicyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "predecessorPayloadDigest": {
+          "type": "null"
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "keyId",
+        "publicKeyPem",
+        "signerFingerprint",
+        "payloadDigest",
+        "signatureBase64"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519"
+        },
+        "keyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "publicKeyPem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signerFingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "payloadDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signatureBase64": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "provider",
+        "owner",
+        "repository",
+        "ownerId",
+        "repositoryId",
+        "releaseId",
+        "tagName",
+        "tagCommit",
+        "packageAssetId",
+        "packageAssetName",
+        "packageDigest",
+        "provenanceAssetId",
+        "provenanceDigest",
+        "prerelease",
+        "makeLatest"
+      ],
+      "properties": {
+        "schema": {
+          "const": "agentproof.release.subject.v1"
+        },
+        "provider": {
+          "const": "github"
+        },
+        "owner": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9-]{1,39}$"
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,100}$"
+        },
+        "ownerId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "repositoryId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "releaseId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tagName": {
+          "type": "string",
+          "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$"
+        },
+        "tagCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "packageAssetId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "packageAssetName": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        },
+        "packageDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "provenanceAssetId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "provenanceDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "prerelease": {
+          "const": true
+        },
+        "makeLatest": {
+          "const": false
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "actionType",
+        "subjectDigest",
+        "transactionId",
+        "nonce",
+        "decision",
+        "environment",
+        "issuer",
+        "decidedAt",
+        "expiresAt",
+        "authorityPublicKeyPem",
+        "signatureBase64"
+      ],
+      "properties": {
+        "schema": {
+          "const": "agentproof.release.approval.v1"
+        },
+        "actionType": {
+          "const": "agentproof.release.v1"
+        },
+        "subjectDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "transactionId": {
+          "type": "string",
+          "pattern": "^[0-9a-f-]{36}$"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "denied"
+          ]
+        },
+        "environment": {
+          "enum": [
+            "production",
+            "development"
+          ]
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "authorityPublicKeyPem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signatureBase64": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "ownerId",
+        "repositoryId",
+        "releaseId",
+        "tagName",
+        "tagCommit",
+        "packageAssetId",
+        "packageAssetName",
+        "packageDigest",
+        "provenanceAssetId",
+        "provenanceDigest",
+        "assetCount",
+        "draft",
+        "prerelease",
+        "publishedAt"
+      ],
+      "properties": {
+        "schema": {
+          "const": "agentproof.release.observation.v1"
+        },
+        "ownerId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "repositoryId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "releaseId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tagName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tagCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "packageAssetId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "packageAssetName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packageDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "provenanceAssetId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "provenanceDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "assetCount": {
+          "const": 2
+        },
+        "draft": {
+          "type": "boolean"
+        },
+        "prerelease": {
+          "const": true
+        },
+        "publishedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
