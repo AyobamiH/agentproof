@@ -1,0 +1,42 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agentproof-release-sign",
+  "account_id": "6ddcbcb8474f1a7e460b2f0aabec0e2f",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-10-17",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RECEIPT_LEDGER",
+        "class_name": "ReleaseReceiptLedger"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "ReleaseReceiptLedger"
+      ]
+    }
+  ],
+  "vars": {
+    "ROLE": "signing",
+    "ENABLED": "false",
+    "TRUSTED_SOURCE_SHA": "0000000000000000000000000000000000000000",
+    "AUDIENCE": "https://agentproof-release-sign.woeinvests.workers.dev",
+    "TARGET_SUBJECT_JSON": "",
+    "SIGNING_PUBLIC_KEY_PEM": "",
+    "SIGNER_FINGERPRINT": "",
+    "AUTHORITY_PUBLIC_KEY_PEM": "",
+    "AUTHORITY_FINGERPRINT": ""
+  },
+  "observability": {
+    "enabled": false
+  }
+}

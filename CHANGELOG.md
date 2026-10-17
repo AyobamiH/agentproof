@@ -58,3 +58,5 @@ AgentProof `0.1.0-rc.4` is a developer prerelease for Node.js 22.5 or newer on L
 - Assumes the authority, executor and verifier run under the same operating-system account in this prerelease and does not provide an OS-enforced privilege boundary.
 
 This release does not add actions, production integration, dashboards, payments, marketplaces or remote routing.
+
+- Add a separate, **disabled-by-default** release-only Cloudflare authority/fence/signing source implementation, with permanent per-release Durable Object execution fencing, read-only recovery, distinct signer custody and strict fixed-source GitHub OIDC. Real release authority, target and token provisioning are unperformed.
