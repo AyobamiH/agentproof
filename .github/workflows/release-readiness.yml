@@ -1,0 +1,36 @@
+name: Read-only release authority readiness
+on:
+  push:
+    branches: [main]
+  schedule:
+    # One bounded source/deployment readback every day, independent of active canaries.
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: read-only-release-readiness-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 pinned
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 pinned
+        with:
+          node-version: 24
+      - name: Verify that partial readback and unsafe authority remain fail-closed
+        run: node --test scripts/test/release-readiness.test.mjs
+      - name: Observe public GitHub and Cloudflare metadata only
+        run: node scripts/release-readiness.mjs --strict --output "$RUNNER_TEMP/agentproof-release-readiness.json"
+      - name: Retain bounded, non-secret readiness evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4 pinned
+        with:
+          name: read-only-release-readiness
+          path: ${{ runner.temp }}/agentproof-release-readiness.json
+          if-no-files-found: warn
+          retention-days: 14

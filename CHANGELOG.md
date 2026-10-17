@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a read-only, no-secret release source/authority readiness check and minimal-permission scheduled GitHub Actions observation; it distinguishes reviewed main from stale production Worker pins and reports disabled release services without claiming a live release or independent adoption.
+
 - Add a source-only, narrowly pinned `agentproof.release.v1` draft-publication transaction candidate with SQLite single-effect intent, no automatic mutation retries, a fixed GitHub API adapter, separately signed approval, release-specific Receipt V2 trust validation, strict generated schemas and adversarial fixtures. This is **not** published or granted runtime authority.
 
 - Add optional explicit Vault Transit Ed25519 signing and external production-approval clients with pinned trust, bounded HTTPS and no credential persistence.
