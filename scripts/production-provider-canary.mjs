@@ -50,11 +50,12 @@ const check = async (name, fn) => {
   const value = await fn(); report.checks.push({ name, status: "PASS" }); delete report.activeCheck; return value;
 };
 const token = endpoint => signal => githubToken(new URL(endpoint).origin, signal);
-async function rejected(endpoint, body, getToken, expected) {
+async function rejected(endpoint, body, getToken, expected, errorCode) {
   const response = await fetch(endpoint, { method: "POST", redirect: "error", signal: AbortSignal.timeout(30_000),
     headers: { "content-type": "application/json", ...(getToken ? { Authorization: "Bearer " + await getToken(AbortSignal.timeout(15_000)) } : {}) },
     body: JSON.stringify(body) });
   assert.equal(response.status, expected);
+  if (errorCode) assert.equal((await response.json()).error, errorCode);
 }
 try {
   for (const endpoint of [trust.approval.endpoint, trust.receipt.endpoint]) {
@@ -63,9 +64,9 @@ try {
       assert.equal(response.status, 200); const health = await response.json();
       assert.equal(health.enabled, true); assert.equal(health.sourceCommit, process.env.GITHUB_SHA);
     });
-    await check("reject_unauthenticated:" + new URL(endpoint).hostname, () => rejected(endpoint, {}, null, 401));
+    await check("reject_unauthenticated:" + new URL(endpoint).hostname, () => rejected(endpoint, {}, null, 401, "authentication_required"));
   }
-  await check("reject_cross_service_token", () => rejected(trust.receipt.endpoint, {}, token(trust.approval.endpoint), 401));
+  await check("reject_cross_service_token", () => rejected(trust.receipt.endpoint, {}, token(trust.approval.endpoint), 401, "authentication_rejected"));
   await mkdir(root); created = true; await mkdir(repo);
   const gitConfig = root + "/empty.gitconfig"; await writeFile(gitConfig, "");
   const env = { PATH: process.env.PATH, LANG: "C.UTF-8", GIT_CONFIG_GLOBAL: gitConfig, GIT_CONFIG_NOSYSTEM: "1", GIT_TERMINAL_PROMPT: "0" };
@@ -85,7 +86,7 @@ try {
   }));
   const request = await createApprovalRequest(prepared, { expiresAt: new Date(Date.now() + 300_000).toISOString(), nonce: correlationId });
   await check("reject_wrong_request", () => rejected(trust.approval.endpoint,
-    { ...request, correlationId: "unapproved" }, token(trust.approval.endpoint), 403));
+    { ...request, correlationId: "unapproved" }, token(trust.approval.endpoint), 403, "policy_rejected"));
   const authority = createProductionApprovalClient({ endpoint: trust.approval.endpoint,
     expectedIssuer: trust.approval.issuer, trustedAuthorityFingerprints: [trust.approval.fingerprint], getToken: token(trust.approval.endpoint), timeoutMs: 30_000 });
   const approvalDecision = await check("live_production_approval", () => authority.requestApproval(request));
@@ -125,7 +126,7 @@ try {
     assert.deepEqual(await executeApprovedTransaction(execution, { receiptSigner: unavailable }), receipt);
   });
   await check("reject_altered_authority_at_signer", () => rejected(trust.receipt.endpoint,
-    { payload: receipt.payload, approvalDecision: { ...approvalDecision, issuer: "wrong" }, predecessorChain: [] }, token(trust.receipt.endpoint), 403));
+    { payload: receipt.payload, approvalDecision: { ...approvalDecision, issuer: "wrong" }, predecessorChain: [] }, token(trust.receipt.endpoint), 403, "authority_rejected"));
   const successor = await check("authenticated_compensation", () => compensateRepositoryPatchWithReceipt({ ...query, authorityEnvironment: "production" },
     { receiptSigner: remoteReceiptSigner({ ...signerArgs, predecessorChain: [receipt] }), trustedSignerFingerprints: [trust.receipt.fingerprint] }));
   await check("offline_successor_chain_and_restored_repository", async () => {
