@@ -1,0 +1,29 @@
+name: Release-only production provider checks
+on:
+  pull_request:
+    paths:
+      - "services/release-provider/**"
+      - ".github/workflows/release-provider-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "services/release-provider/**"
+      - ".github/workflows/release-provider-check.yml"
+permissions:
+  contents: read
+jobs:
+  release-provider:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 pinned
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 pinned
+        with:
+          node-version: 24
+      - name: Build source contract
+        run: npm ci && npm run build
+      - name: Check new, disabled-by-default release services
+        working-directory: services/release-provider
+        run: npm ci --ignore-scripts && npm run check && npm audit --audit-level=high

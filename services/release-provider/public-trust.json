@@ -1,0 +1,13 @@
+{
+  "schema": "agentproof.release-provider-trust.v1",
+  "approval": {
+    "publicKeyPem": "",
+    "fingerprint": ""
+  },
+  "signing": {
+    "publicKeyPem": "",
+    "fingerprint": ""
+  },
+  "custody": "cloudflare-encrypted-worker-secrets",
+  "scope": "one disposable GitHub release; no patch authority"
+}
