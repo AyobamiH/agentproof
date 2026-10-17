@@ -1,6 +1,6 @@
 # Production provider readiness
 
-Status: external SDK adapters and a narrow hosted canary implementation in unreleased source. Separate Cloudflare approval/signing services are provisioned disabled; live activation evidence is still required.
+Status: external SDK adapters remain unreleased source. A narrowly pinned Cloudflare repository-patch production canary passed 17/17 authenticated live checks on 17 October 2026; see [acceptance evidence](../evidence/hosted-production-canary-acceptance-20261017.md). It is software-custodied and cannot authorise arbitrary policies or DoneState consequences. Committed configurations remain disabled by default, and any new main SHA requires an explicit re-pin and fresh canary.
 
 The portable SDK already accepts a `SigningProvider` with asynchronous `keyId()`,
 `publicKeyPem()` and `signCanonical(payload)`. An integration can retain signing
