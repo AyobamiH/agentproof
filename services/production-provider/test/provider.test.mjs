@@ -44,12 +44,13 @@ function oidcClaims() {
   return { repository: "AyobamiH/agentproof", repository_id: "1317413810", repository_owner_id: "47716486",
     actor_id: "47716486", ref: "refs/heads/main", event_name: "workflow_dispatch", runner_environment: "github-hosted",
     workflow_ref: "AyobamiH/agentproof/.github/workflows/production-provider-canary.yml@refs/heads/main",
-    workflow_sha: pin, sha: pin, sub: "repo:AyobamiH/agentproof:environment:agentproof-production-canary", ...claims };
+    workflow_sha: pin, sha: pin, sub: "repo:AyobamiH@47716486/agentproof@1317413810:environment:agentproof-production-canary", ...claims };
 }
 test("workload policy rejects every changed identity boundary and disabled activation", () => {
   const env = environment("approval"), valid = oidcClaims();
   assert.deepEqual(validateClaims(valid, env), claims);
   for (const key of Object.keys(valid)) assert.throws(() => validateClaims({ ...valid, [key]: "untrusted" }, env), Rejection);
+  assert.throws(() => validateClaims({ ...valid, sub: "repo:AyobamiH/agentproof:environment:agentproof-production-canary" }, env), /workload_rejected/);
   assert.throws(() => validateClaims(valid, { ...env, ENABLED: "false" }), /provider_disabled/);
   assert.throws(() => validateClaims(valid, { ...env, TRUSTED_SOURCE_SHA: "0".repeat(40) }), /provider_disabled/);
 });

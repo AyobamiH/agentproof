@@ -10,7 +10,7 @@ export function validateClaims(claims, env) {
     actor_id: "47716486", ref: "refs/heads/main", event_name: "workflow_dispatch", runner_environment: "github-hosted",
     workflow_ref: "AyobamiH/agentproof/.github/workflows/production-provider-canary.yml@refs/heads/main",
     workflow_sha: env.TRUSTED_SOURCE_SHA, sha: env.TRUSTED_SOURCE_SHA,
-    sub: "repo:AyobamiH/agentproof:environment:agentproof-production-canary",
+    sub: "repo:AyobamiH@47716486/agentproof@1317413810:environment:agentproof-production-canary",
   };
   for (const [key, value] of Object.entries(expected)) demand(claims[key] === value, "workload_rejected", 403);
   demand(/^\d{1,20}$/.test(claims.run_id) && /^\d{1,4}$/.test(claims.run_attempt), "workload_rejected");
