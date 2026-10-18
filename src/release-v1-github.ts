@@ -2,6 +2,9 @@ import { parseJsonStrict } from "./strict-json.js";
 import { releaseAssert, validateReleaseObservation, validateReleaseSubject,
   type ReleaseV1Provider, type ReleaseV1Subject, type ReleaseV1Observation } from "./release-v1-contract.js";
 
+export interface GitHubPublicationResponse {
+  status: number; requestId: string | null; body: string;
+}
 export interface GitHubReleaseClientOptions {
   // Host injects a short-lived token. It is not logged or persisted.
   getToken: (signal: AbortSignal) => Promise<string>;
@@ -26,6 +29,8 @@ export function canonicalGitHubPublishedAt(value: unknown): string | null {
 }
 export class GitHubReleaseV1Provider implements ReleaseV1Provider {
   readonly base: string;
+  // Public response evidence only: never persist the publisher credential.
+  publicationResponse: GitHubPublicationResponse | null = null;
   constructor(readonly subject: ReleaseV1Subject, readonly options: GitHubReleaseClientOptions) {
     validateReleaseSubject(subject);
     releaseAssert(typeof options.getToken === "function" && Number.isInteger(options.timeoutMs ?? 15000) &&
@@ -47,8 +52,6 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
           "authorization": "Bearer " + token, "x-github-api-version": "2022-11-28" },
         ...(body ? { body: JSON.stringify(body) } : {}),
       });
-      releaseAssert(response.status === (method === "PATCH" ? 200 : 200) && !response.redirected &&
-        response.headers.get("content-type")?.includes("application/json"), "github_provider_unavailable");
       releaseAssert(Number(response.headers.get("content-length") ?? 0) < 262144, "github_response_oversized");
       const reader = response.body?.getReader();
       releaseAssert(reader, "github_empty_response");
@@ -63,6 +66,11 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
         }
       } finally { void reader.cancel().catch(() => {}); }
       const raw = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
+      if (method === "PATCH") this.publicationResponse = {
+        status: response.status, requestId: response.headers.get("x-github-request-id"), body: raw,
+      };
+      releaseAssert(response.status === 200 && !response.redirected &&
+        response.headers.get("content-type")?.includes("application/json"), "github_provider_unavailable");
       parseJsonStrict(raw);
       const parsed: unknown = JSON.parse(raw);
       releaseAssert(parsed && typeof parsed === "object" && !Array.isArray(parsed), "github_invalid_json");

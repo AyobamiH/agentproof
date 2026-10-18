@@ -106,3 +106,5 @@ Regression fixtures cover this real provider format; they are not a real
 release publication or OpsTruth/DoneState terminal acceptance. Existing
 current-main patch acceptance is workflow 39113765551 on 39d4ea7; merging this
 necessary compatibility correction requires a new exact-source re-pin and canary.
+
+The same candidate preserves the bounded raw GitHub publication-response body, status and request ID in the release Durable Object and returns it during read-only reconciliation. Network loss remains explicit null evidence; it never causes a second publication attempt. Provider tests cover exact response persistence, canonical seconds-precision readback and lost-response recovery.
