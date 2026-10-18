@@ -1,4 +1,4 @@
-import { recoveryPolicy, validateRecoveryGrant } from "./recovery.mjs";
+import { recoveryPolicy, validateRecoveryGrant, validateRecordedRecoveryGrant } from "./recovery.mjs";
 import { digest, stableJson } from "../../../dist/hash.js";
 import { validateReleaseObservation } from "../../../dist/release-v1-contract.js";
 import { authenticate, githubToken, demand, ReleaseRefusal } from "./identity.mjs";
@@ -111,9 +111,11 @@ export class ReleaseFence {
     return { state: record.state, request: { ...record.seed, approval: record.approval },
       reservation: record.state === "reserved" ? record.reservation ?? null : null };
   }
-  async observeAndSettle(seed, token) {
+  async observeAndSettle(seed, token, claims) {
     let record = this.get();
     sameSeed(record, seed);
+    if (record.state === "attempted" || record.state === "verified")
+      validateRecordedRecoveryGrant(record, claims, this.env);
     if (record.state === "verified") return { state: record.state, completion: record.completion, publicationResponse: record.publicationResponse ?? null };
     if (record.state !== "attempted") return { state: record.state, completion: null };
     let after;
@@ -160,7 +162,7 @@ export class ReleaseFence {
     sameSeed(previous, seed);
     demand(stableJson(previous.approval) === stableJson(request.approval),
       "approval_not_reserved", 403);
-    if (previous.state !== "reserved") return this.observeAndSettle(seed, token);
+    if (previous.state !== "reserved") return this.observeAndSettle(seed, token, claims);
     demand(stableJson(previous.recoveryPolicy ?? null)===stableJson(recoveryPolicy(this.env)),
       "recovery_policy_changed");
     if(previous.recoveryPolicy) {
@@ -180,7 +182,7 @@ export class ReleaseFence {
       this.set({ ...record, state: "attempted", attemptedAt: new Date().toISOString() });
       return true;
     });
-    if (!claimed) return this.observeAndSettle(seed, token);
+    if (!claimed) return this.observeAndSettle(seed, token, claims);
     const publisher = provider(seed.subject, token);
     try {
       // Exactly one GitHub PATCH in the entire lifetime of this target fence.
@@ -197,7 +199,7 @@ export class ReleaseFence {
         this.set({ ...record, publicationResponse: publisher.publicationResponse });
       });
     }
-    return this.observeAndSettle(seed, token);
+    return this.observeAndSettle(seed, token, claims);
   }
   async fetch(request) {
     try {
@@ -208,7 +210,7 @@ export class ReleaseFence {
       if (path === "/v1/execute") return reply(await this.execute(body.request, claims, token));
       demand(path === "/v1/reconcile", "route_not_found", 404);
       const { seed } = validateSignedRequest(body.request, claims, this.env, { historical: true });
-      return reply(await this.observeAndSettle(seed, token));
+      return reply(await this.observeAndSettle(seed, token, claims));
     } catch (error) { return failure(error); }
   }
 }

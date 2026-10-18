@@ -130,3 +130,12 @@ Current-main patch acceptance must be re-pinned after this source merge. Real re
 Independent PR #21 review required run-attempt binding in the reservation. The signed payload now includes the authenticated numeric attempt, and DoneState checks the exact run/attempt pair. Retrieving an existing reservation never relabels its producing attempt.
 
 Recovery now uses a causal signature gate: DoneState commits the preserved-authority transition before signing a domain-separated grant with its existing handoff key. AgentProof requires that exact grant to activate the same permanent reserved fence before execution. The signed completion records its digest. Timestamp checks remain additional freshness bounds, never the sole ordering proof. Withheld, forged, stale or wrong-attempt grants cannot execute; disabling recovery configuration cannot clear the stored gate.
+
+The release recovery read lane now verifies the persisted causal grant against its
+original producing attempt before settling or returning attempted/verified evidence.
+A later authenticated attempt of the same pinned workflow run may reconcile using
+GET only; it never receives new publication authority. The original signed grant
+and its digest remain unchanged. Regression coverage exercises a lost settlement,
+a later-attempt readback, tampered stored grants and read-only recovery after grant
+expiry, with the publication count fixed at one. This remains source validation,
+not a real publication or DoneState terminal outcome.

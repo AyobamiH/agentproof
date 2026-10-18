@@ -35,3 +35,20 @@ export function validateRecoveryGrant(grant,record,claims,env,now=Date.now()) {
     verify(null,Buffer.from('donestate.release-recovery-authorisation.v1\0'+stableJson(unsigned)),key,
       Buffer.from(signatureBase64,'base64')), 'recovery_grant_signature');
 }
+
+// A later authenticated attempt may inspect the original effect, never spend
+// the original grant again. Verify that grant at its recorded issuance time.
+export function validateRecordedRecoveryGrant(record, claims, env) {
+  const configured = recoveryPolicy(env);
+  demand(stableJson(configured) === stableJson(record.recoveryPolicy ?? null),
+    'recovery_policy_changed');
+  if (!configured) return;
+  const grant = record.recoveryAuthorisation;
+  demand(grant && record.reservation, 'recovery_authorisation_required');
+  const producingAttempt = record.reservation.githubRunAttempt;
+  demand(record.reservation.githubRunId === claims.run_id &&
+    Number.isSafeInteger(producingAttempt) && producingAttempt >= 1 &&
+    Number(claims.run_attempt) >= producingAttempt, 'recovery_reader_binding');
+  validateRecoveryGrant(grant, record,
+    {...claims, run_attempt: String(producingAttempt)}, env, releaseTime(grant.issuedAt));
+}

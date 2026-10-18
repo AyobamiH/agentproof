@@ -282,4 +282,27 @@ test("recovery reservation cannot execute until a distinct signed committed-auth
     issuer:'agentproof.release-canary.authority.v1',authorityFingerprints:[approvalKey.fingerprint],
     signerFingerprint:receiptKey.fingerprint,signerKeyId:'agentproof.release-canary.receipts.v1'}).trusted,true);
   await call('approval',a,'/v1/execute',{request:prepared.request});assert.equal(api.mutationCount,1);
+  const laterAttempt={...claims(),run_attempt:'2'};
+  const committed=a.ledger.get('release');
+  // Simulate losing settlement after the sole external effect.
+  a.ledger.set('release',{...committed,state:'attempted',completion:null,after:null,verifiedAt:null});
+  const reconciled=await call('approval',a,'/v1/reconcile',{request:prepared.request},laterAttempt);
+  assert.equal(reconciled.status,200);assert.equal(reconciled.json.state,'verified');
+  assert.equal(reconciled.json.completion.recoveryAuthorisationDigest,digest(grant));
+  assert.equal(api.mutationCount,1);
+  const retained=a.ledger.get('release');
+  assert.deepEqual(retained.recoveryAuthorisation,grant);
+  a.ledger.set('release',{...retained,recoveryAuthorisation:{...grant,signatureBase64:'A'.repeat(86)+'=='}});
+  for(const path of ['/v1/reconcile','/v1/execute']){
+    const invalid=await call('approval',a,path,{request:prepared.request},laterAttempt);
+    assert.equal(invalid.status,403);assert.equal(api.mutationCount,1);
+  }
+  a.ledger.set('release',retained);
+  const afterExpiry=Date.parse(grant.expiresAt)+1000;
+  t.mock.method(Date,'now',()=>afterExpiry);
+  const historical=await call('approval',a,'/v1/reconcile',{request:prepared.request},laterAttempt);
+  assert.equal(historical.status,200);
+  assert.deepEqual(historical.json.completion,reconciled.json.completion);
+  assert.equal(api.mutationCount,1);
+
 });
