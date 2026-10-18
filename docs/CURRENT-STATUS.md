@@ -94,3 +94,15 @@ The selected disposable public test repository is AyobamiH/agentproof-release-ca
 A separate [read-only readiness protocol](protocols/read-only-release-readiness.md) now contains an explicit public-GitHub/Cloudflare source-pin and disabled release-authority observation command, with a minimal-permission GitHub Actions workflow on main pushes and daily. The local live readback reported `PATCH_SOURCE_PIN_DRIFT`: AgentProof main `b6724b1927e26aa7284371ec7fdd974aeefcbf42` versus still-enabled existing repository-patch Workers at `2ed24b95ec90f36d52132cc3f98fc9d937ade4da`. The three separate release approval, signing and independent verifier Workers remain disabled, zero-pinned and without active release authority. The disposable GitHub repository contains no release. OpsTruth's original MCP remains read-only.
 
 The check makes only ten allowlisted public HTTP **GET** calls, never requests tokens or changes any deployment, source pin, approval, release or signer. Public read failures are `UNPROVEN`, not success. The scheduled observation cannot publish or verify release outcomes; `AgentProof #17` remains the explicit permitted source-repin and fresh 17/17 canary gate, and `DoneState #193` remains the genuine release-to-VERIFIED gate. No independent external first-install users are inferred. This source addition does not republish RC6 or enable `release.v1`.
+
+## GitHub release timestamp compatibility — 18 October 2026
+
+Actual GitHub release readback (RC6 release 405381381) returns published_at as
+2026-10-07T04:34:23Z. The release adapter and the independent receipt signer's
+public reader now canonicalise valid GitHub seconds/milliseconds UTC values to
+the protocol's millisecond UTC representation, while rejecting invalid dates,
+offsets and non-string values. The signed timestamp schema is unchanged.
+Regression fixtures cover this real provider format; they are not a real
+release publication or OpsTruth/DoneState terminal acceptance. Existing
+current-main patch acceptance is workflow 39113765551 on 39d4ea7; merging this
+necessary compatibility correction requires a new exact-source re-pin and canary.

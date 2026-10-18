@@ -11,6 +11,19 @@ function id(value: unknown, code: string): number {
   releaseAssert(Number.isSafeInteger(value) && Number(value) > 0, code);
   return Number(value);
 }
+/** Convert GitHub's seconds-precision UTC timestamp at the provider boundary.
+ * Signed protocol timestamps remain canonical millisecond-precision UTC. */
+export function canonicalGitHubPublishedAt(value: unknown): string | null {
+  if (value === null) return null;
+  releaseAssert(typeof value === "string" &&
+    /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(value),
+    "github_publication_time_invalid");
+  const canonical = value.includes(".") ? value : value.slice(0, -1) + ".000Z";
+  const time = Date.parse(canonical);
+  releaseAssert(Number.isFinite(time) && new Date(time).toISOString() === canonical,
+    "github_publication_time_invalid");
+  return canonical;
+}
 export class GitHubReleaseV1Provider implements ReleaseV1Provider {
   readonly base: string;
   constructor(readonly subject: ReleaseV1Subject, readonly options: GitHubReleaseClientOptions) {
@@ -91,7 +104,7 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
       releaseId: release.id, tagName: release.tag_name, tagCommit: commit,
       packageAssetId: asset.id, packageAssetName: asset.name, packageDigest: asset.digest,
       provenanceAssetId: provenance.id, provenanceDigest: provenance.digest, assetCount: release.assets.length,
-      draft: release.draft, prerelease: release.prerelease, publishedAt: release.published_at,
+      draft: release.draft, prerelease: release.prerelease, publishedAt: canonicalGitHubPublishedAt(release.published_at),
     };
     // Preserve raw observation for the coordinator to distinguish draft vs published.
     validateReleaseObservation(observation, target, !observation.draft);

@@ -2,7 +2,7 @@ import { createPrivateKey, createPublicKey, sign, verify } from "node:crypto";
 import { digest, stableJson } from "../../../dist/hash.js";
 import { publicKeyFingerprint } from "../../../dist/signer.js";
 import { parseJsonStrict } from "../../../dist/strict-json.js";
-import { GitHubReleaseV1Provider } from "../../../dist/release-v1-github.js";
+import { GitHubReleaseV1Provider, canonicalGitHubPublishedAt } from "../../../dist/release-v1-github.js";
 import { validateReleaseSubject, validateReleaseObservation, validateReleaseRequest,
   validateReleaseApproval, exactKeys, releaseAssert } from "../../../dist/release-v1-contract.js";
 import { releasePayload, signReleaseReceiptV2 } from "../../../dist/release-v1-receipt.js";
@@ -194,7 +194,7 @@ export async function publicReleaseReadback(subject) {
     packageAssetId: pkg.id, packageAssetName: pkg.name, packageDigest: pkg.digest,
     provenanceAssetId: provenance.id, provenanceDigest: provenance.digest,
     assetCount: release.assets.length, draft: release.draft,
-    prerelease: release.prerelease, publishedAt: release.published_at,
+    prerelease: release.prerelease, publishedAt: canonicalGitHubPublishedAt(release.published_at),
   };
 }
 export async function verifiedReceipt({ request, completion, env }) {
