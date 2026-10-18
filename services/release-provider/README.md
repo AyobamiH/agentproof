@@ -21,3 +21,7 @@ The disposable GitHub repository was established at https://github.com/AyobamiH/
 Activation additionally requires a real test-only draft with exactly two independently hashed artifacts, separate provenance signing, a protected and source-pinned workflow, a scoped ephemeral publisher token held only by the executor, and a successful GitHub publication followed by a genuinely signed, independently downloaded-byte OpsTruth release decision and DoneState acceptance.
 
 **External blocker:** A platform security check refused creating the disposable GitHub draft and also refused writing the credential-bearing canary orchestration script. Neither action was performed or bypassed. Do not claim a production release, real OpsTruth release attestation, or independent adopter from this source candidate.
+
+## Separate deployed-source and caller-source identities
+
+The health response retains legacy sourceCommit as the trusted GitHub workflow revision for existing disabled-state monitoring. trustedWorkflowCommit makes that meaning explicit; serviceSourceCommit separately identifies the reviewed AgentProof build revision configured by the deployment process. An unset service revision is null and cannot satisfy production acceptance. The canary checks both identities, and deployment evidence additionally records the Cloudflare version and exact source checkout. No authentication, signing or publication authority changes.

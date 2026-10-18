@@ -42,7 +42,8 @@ export async function handle(request, env, auth = authenticate) {
     if (request.method === "GET" && url.pathname === "/health") {
       return reply({ service: "agentproof-release-canary", role: env.ROLE,
         enabled: env.ENABLED === "true", custody: "cloudflare-encrypted-worker-secret",
-        sourceCommit: env.TRUSTED_SOURCE_SHA, targetConfigured: !!env.TARGET_SUBJECT_JSON });
+        sourceCommit: env.TRUSTED_SOURCE_SHA, trustedWorkflowCommit: env.TRUSTED_SOURCE_SHA,
+        serviceSourceCommit: env.SERVICE_SOURCE_SHA ?? null, targetConfigured: !!env.TARGET_SUBJECT_JSON });
     }
     demand(env.ROLE === "approval" || env.ROLE === "signing", "role_invalid", 503);
     const paths = env.ROLE === "approval" ?
