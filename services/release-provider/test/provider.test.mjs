@@ -5,6 +5,7 @@ import { digest, stableJson } from "../../../dist/hash.js";
 import { publicKeyFingerprint } from "../../../dist/signer.js";
 import { verifyReleaseReceiptV2 } from "../../../dist/release-v1-receipt.js";
 import { validateClaims, SUBJECT, CANARY_REPOSITORY, WORKFLOW } from "../src/identity.mjs";
+import { publicReleaseReadback } from "../src/policy.mjs";
 import { ReleaseFence, ReleaseReceiptLedger, handle } from "../src/worker.mjs";
 
 const HEAD = "1".repeat(40);
@@ -76,7 +77,7 @@ function githubFixture(t, options={}) {
   t.mock.method(globalThis,"fetch",async (input,init={})=>{
     const url = new URL(String(input));
     assert.equal(url.origin,"https://api.github.com");
-    assert.equal(init.redirect,"error");
+    assert.equal(init.redirect,"manual");
     assert.match(init.headers["user-agent"], /^agentproof-/);
     if (init.headers.authorization !== undefined)
       assert.equal(init.headers.authorization,"Bearer test-ephemeral-gh-token");
@@ -305,4 +306,29 @@ test("recovery reservation cannot execute until a distinct signed committed-auth
   assert.deepEqual(historical.json.completion,reconciled.json.completion);
   assert.equal(api.mutationCount,1);
 
+});
+
+
+test("GitHub redirects cannot reserve a release or satisfy independent signer readback",async t=>{
+  let status=301,calls=[];
+  t.mock.method(globalThis,"fetch",async(input,init)=>{
+    assert.equal(new URL(String(input)).origin,"https://api.github.com");
+    assert.equal(init.method,"GET");
+    assert.equal(init.redirect,"manual");
+    calls.push({url:String(input),method:init.method});
+    return new Response("untrusted redirect body",{
+      status,headers:{location:"https://untrusted.invalid/steal","content-type":"text/plain"}
+    });
+  });
+  for(status of [301,302,303,307,308]){
+    const authority=env("approval");calls=[];
+    const rejected=await call("approval",authority,"/v1/prepare",{seed:seed()});
+    assert.equal(rejected.status,403);
+    assert.equal(rejected.json.error,"release_policy_rejected");
+    assert.equal(calls.length,1);
+    assert.equal(authority.ledger.size,0);
+    calls=[];
+    await assert.rejects(publicReleaseReadback(subject),/public_readback_unavailable/);
+    assert.equal(calls.length,1);
+  }
 });
