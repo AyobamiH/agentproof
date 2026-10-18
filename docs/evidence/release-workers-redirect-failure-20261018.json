@@ -1,0 +1,63 @@
+{
+  "schema": "agentproof.release-runtime-compatibility-evidence.v1",
+  "recordedAt": "2026-10-18T11:32:02.594441+00:00",
+  "baseSource": "d89f6d54709830ff49373ab7c2797c927ced8ac9",
+  "failedWorkflow": "https://github.com/AyobamiH/agentproof-release-canary/actions/runs/39122966755",
+  "failedWorkflowCommit": "cc1dfb79c1a63a62e69049473b6170674667d8d1",
+  "publicationArtifactSha256": "de151fc8a32090fb6916803de230d37b56a2e99aa2657c3193ad15471f49fdca",
+  "before": {
+    "at": "2026-10-18T11:28:49.979Z",
+    "readOnly": true,
+    "result": {
+      "error": "release_v1:github_provider_unavailable",
+      "calls": [
+        {
+          "path": "/repos/AyobamiH/agentproof-release-canary",
+          "failure": "TypeError: Invalid redirect value, must be one of \"follow\" or \"manual\" (\"error\" won't be implemented since it does not make sense at the edge; use \"manual\" and check the response status code)."
+        }
+      ]
+    }
+  },
+  "after": {
+    "at": "2026-10-18T11:31:13.740Z",
+    "readOnly": true,
+    "result": {
+      "observation": {
+        "schema": "agentproof.release.observation.v1",
+        "ownerId": 47716486,
+        "repositoryId": 1423718326,
+        "releaseId": 416342082,
+        "tagName": "v0.0.0-rc.2026101801",
+        "tagCommit": "1231076c12485a02fae3c38b0b850a25274985d5",
+        "packageAssetId": 653036082,
+        "packageAssetName": "agentproof-disposable-canary.tgz",
+        "packageDigest": "sha256:064f989c25b86269004401959b1e2aa68cc0b3acbf310ba647b892aa5e28b186",
+        "provenanceAssetId": 653046879,
+        "provenanceDigest": "sha256:fa76d7de87ba327ccd81943563af7daed1c87775e049e52a047df59c5b1475b4",
+        "assetCount": 2,
+        "draft": true,
+        "prerelease": true,
+        "publishedAt": null
+      },
+      "calls": [
+        {
+          "path": "/repos/AyobamiH/agentproof-release-canary",
+          "status": 200,
+          "type": "application/json; charset=utf-8"
+        },
+        {
+          "path": "/repos/AyobamiH/agentproof-release-canary/git/ref/tags/v0.0.0-rc.2026101801",
+          "status": 200,
+          "type": "application/json; charset=utf-8"
+        },
+        {
+          "path": "/repos/AyobamiH/agentproof-release-canary/releases/416342082",
+          "status": 200,
+          "type": "application/json; charset=utf-8"
+        }
+      ]
+    }
+  },
+  "scope": "Local Workers-runtime GET-only probe with existing maintainer authentication. No production private signing keys, no mutation, no durable reservation. Not a live consequence acceptance.",
+  "independentAdoptionCredit": 0
+}

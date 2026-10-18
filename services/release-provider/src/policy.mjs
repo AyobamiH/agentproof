@@ -167,7 +167,7 @@ export function releaseSigner(env) {
 }
 async function anonymousGitHubJson(path) {
   const response = await fetch("https://api.github.com/repos/AyobamiH/agentproof-release-canary" + path, {
-    method: "GET", redirect: "error", cache: "no-store",
+    method: "GET", redirect: "manual", cache: "no-store",
     headers: { accept: "application/vnd.github+json", "user-agent": "agentproof-separate-release-signer/1.0" },
     signal: AbortSignal.timeout(12_000),
   });

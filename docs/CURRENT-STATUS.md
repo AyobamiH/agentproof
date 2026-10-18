@@ -139,3 +139,27 @@ and its digest remain unchanged. Regression coverage exercises a lost settlement
 a later-attempt readback, tampered stored grants and read-only recovery after grant
 expiry, with the publication count fixed at one. This remains source validation,
 not a real publication or DoneState terminal outcome.
+
+
+## Workers redirect compatibility repair — 18 October 2026
+
+Protected release canary [39122966755](https://github.com/AyobamiH/agentproof-release-canary/actions/runs/39122966755)
+passed authorisation but stopped at preparation with `release_policy_rejected`.
+Its publication artifact SHA-256 is
+`de151fc8a32090fb6916803de230d37b56a2e99aa2657c3193ad15471f49fdca`.
+The existing exact release remained a draft; no reservation or publication evidence
+was returned and the verifier job did not run.
+
+A GET-only reproduction using the Workers runtime identified the cause:
+`redirect: "error"` is rejected before the GitHub request is sent. Node-only
+fixtures had incorrectly required this mode. Both the release provider and separate
+receipt signer's metadata reader now use `redirect: "manual"`; their existing
+exact HTTP 200 checks continue to refuse redirects. Regression cases cover all
+five redirect statuses, zero durable reservation and no redirected follow-up.
+
+This is a source correction awaiting exact-source deployment and live acceptance.
+Existing target fences, signing identities, source/OIDC pins and the single-PATCH
+policy are unchanged. The independently verified repository-patch run
+[39121692291](https://github.com/AyobamiH/agentproof/actions/runs/39121692291)
+remains evidence for `d89f6d54709830ff49373ab7c2797c927ced8ac9`.
+RC6 npm publication is unchanged; independent-installation credit remains zero.

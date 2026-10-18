@@ -46,8 +46,10 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
       releaseAssert(typeof token === "string" && token.length >= 8 &&
         token.length <= 4096 && /^[\x21-\x7e]+$/.test(token) && !controller.signal.aborted,
         "github_token_unavailable");
+      // Workers reject redirect: error. Manual mode plus exact 200 validation
+      // refuses redirects without forwarding the short-lived token.
       const response = await fetch(this.base + suffix, {
-        method, redirect: "error", cache: "no-store", signal: controller.signal,
+        method, redirect: "manual", cache: "no-store", signal: controller.signal,
         headers: { "accept": "application/vnd.github+json", "content-type": "application/json",
           "authorization": "Bearer " + token, "x-github-api-version": "2022-11-28",
           "user-agent": "agentproof-release-provider/1.0" },
