@@ -66,14 +66,19 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
         }
       } finally { void reader.cancel().catch(() => {}); }
       const raw = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
-      if (method === "PATCH") this.publicationResponse = {
-        status: response.status, requestId: response.headers.get("x-github-request-id"), body: raw,
-      };
       releaseAssert(response.status === 200 && !response.redirected &&
         response.headers.get("content-type")?.includes("application/json"), "github_provider_unavailable");
       parseJsonStrict(raw);
       const parsed: unknown = JSON.parse(raw);
       releaseAssert(parsed && typeof parsed === "object" && !Array.isArray(parsed), "github_invalid_json");
+      if (method === "PATCH") {
+        const publication = parsed as Record<string, unknown>;
+        releaseAssert(publication.id === this.subject.releaseId && publication.tag_name === this.subject.tagName &&
+          publication.draft === false && publication.prerelease === true, "github_publish_response_unexpected");
+        this.publicationResponse = {
+          status: response.status, requestId: response.headers.get("x-github-request-id"), body: raw,
+        };
+      }
       return parsed as Record<string, any>;
     } catch (error) {
       if (error instanceof Error && error.message.startsWith("release_v1:")) throw error;

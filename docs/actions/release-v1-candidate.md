@@ -38,3 +38,5 @@ Before any live canary or customer use:
 ## Explicit non-claims
 
 This is not a hosted production release service, HSM custody, arbitrary GitHub release publisher, npm publication permission, independent external user adoption, OS-enforced sandbox, verified DoneState release, or OpsTruth production acceptance. The existing successful [17/17 repository-patch canary](https://github.com/AyobamiH/agentproof/actions/runs/39008821740) remains a distinct, unchanged authority class.
+
+For hosted canary acceptance, a validated HTTP 200 publication response may be retained as bounded public evidence (raw body, status and GitHub request ID). Tokens, request headers, failed or malformed response bodies are never retained. Missing successful response evidence remains null and is recovered through signed independent readback without repeating publication.

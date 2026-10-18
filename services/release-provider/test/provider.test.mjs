@@ -105,6 +105,8 @@ function githubFixture(t, options={}) {
       assert.equal(state.mutationCount,1);
       assert.deepEqual(JSON.parse(init.body),{draft:false,prerelease:true,make_latest:"false"});
       if(options.failBeforeEffect) throw Error("network_failed_pre_effect");
+      if(options.rejected) return new Response('{"message":"private provider error detail"}', {
+        status:403,headers:{"content-type":"application/json"}});
       state.published=true;state.publishedAt=new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
       if(options.lostResponse) throw Error("network_lost_after_effect");
       payload={id:subject.releaseId,tag_name:subject.tagName,
@@ -197,4 +199,15 @@ test("receipt signer refuses unverified completion or modified authority",async 
   const altered={...x.json.completion,subjectDigest:"f".repeat(64)};
   const deny=await call("signing",s,"/v1/sign",{request:p.json.request,completion:altered});
   assert.equal(deny.status,403);assert.equal(api.mutationCount,1);
+});
+
+test("rejected publication error bodies are not retained or returned",async t=>{
+  const api=githubFixture(t,{rejected:true}),a=env("approval");
+  const p=await call("approval",a,"/v1/prepare",{seed:seed()});
+  const result=await call("approval",a,"/v1/execute",{request:p.json.request});
+  assert.equal(result.json.state,"attempted");assert.equal(result.json.publicationResponse,null);
+  assert.equal(a.ledger.get("release").publicationResponse,null);
+  assert(!JSON.stringify([...a.ledger]).includes("private provider error detail"));
+  const recovered=await call("approval",a,"/v1/reconcile",{request:p.json.request});
+  assert.equal(recovered.json.publicationResponse,null);assert.equal(api.mutationCount,1);
 });

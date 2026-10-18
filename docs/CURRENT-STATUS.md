@@ -107,4 +107,6 @@ release publication or OpsTruth/DoneState terminal acceptance. Existing
 current-main patch acceptance is workflow 39113765551 on 39d4ea7; merging this
 necessary compatibility correction requires a new exact-source re-pin and canary.
 
-The same candidate preserves the bounded raw GitHub publication-response body, status and request ID in the release Durable Object and returns it during read-only reconciliation. Network loss remains explicit null evidence; it never causes a second publication attempt. Provider tests cover exact response persistence, canonical seconds-precision readback and lost-response recovery.
+The same candidate preserves the bounded raw, validated HTTP 200 GitHub publication-response body, status and request ID in the release Durable Object and returns it during read-only reconciliation. Network loss remains explicit null evidence; it never causes a second publication attempt. Provider tests cover exact response persistence, canonical seconds-precision readback and lost-response recovery.
+
+PR #19 independent review identified the existing no-error-body-retention contract. The follow-up records only validated HTTP 200 publication responses; failed/malformed response bodies remain unretained, with explicit null recovery evidence and a regression test.
