@@ -7,6 +7,7 @@ import { validateReleaseSubject, validateReleaseObservation, validateReleaseRequ
   validateReleaseApproval, exactKeys, releaseAssert } from "../../../dist/release-v1-contract.js";
 import { releasePayload, signReleaseReceiptV2 } from "../../../dist/release-v1-receipt.js";
 import { demand, ReleaseRefusal } from "./identity.mjs";
+import { recoveryPolicy } from "./recovery.mjs";
 
 export const AUTHORITY_ISSUER = "agentproof.release-canary.authority.v1";
 export const RECEIPT_KEY_ID = "agentproof.release-canary.receipts.v1";
@@ -117,6 +118,7 @@ export function completionUnsigned(record, env) {
     subjectDigest: digest(record.seed.subject),
     attemptedAt: record.attemptedAt, verifiedAt: record.verifiedAt,
     before: record.before, after: record.after,
+    recoveryAuthorisationDigest: record.recoveryAuthorisation ? digest(record.recoveryAuthorisation) : null,
   };
 }
 export function signCompletion(record, env) {
@@ -126,7 +128,7 @@ export function signCompletion(record, env) {
 }
 export function validateCompletion(completion, request, env) {
   exactKeys(completion, ["schema", "sourceCommit", "transactionId", "requestDigest",
-    "subjectDigest", "attemptedAt", "verifiedAt", "before", "after", "signatureBase64"],
+    "subjectDigest", "attemptedAt", "verifiedAt", "before", "after", "recoveryAuthorisationDigest", "signatureBase64"],
   "completion_shape");
   const { signatureBase64, ...unsigned } = completion;
   demand(completion.schema === "agentproof.release-canary.execution-evidence.v1" &&
@@ -135,6 +137,8 @@ export function validateCompletion(completion, request, env) {
     completion.requestDigest === digest(seedFromRequest(request)) &&
     completion.subjectDigest === digest(request.subject),
     "invalid_execution_evidence");
+  demand(env.RECOVERY_REQUIRED === "true" ? HEX64.test(completion.recoveryAuthorisationDigest) :
+    completion.recoveryAuthorisationDigest === null, "recovery_completion_required");
   validateReleaseObservation(completion.before, request.subject, false);
   validateReleaseObservation(completion.after, request.subject, true);
   demand(typeof completion.attemptedAt === "string" &&
@@ -214,4 +218,21 @@ export async function verifiedReceipt({ request, completion, env }) {
 }
 export function targetScope(subject) {
   return subject.repositoryId + ":" + subject.releaseId;
+}
+
+// A reservation proves that this exact seed won the permanent target fence.
+// It is never a publication receipt and cannot attest an external outcome.
+export function reservationEvidence(seed, approval, claims, env) {
+  const unsigned = {
+    schema: "agentproof.release-reservation.v1", state: "reserved", recoveryPolicy: recoveryPolicy(env),
+    requestDigest: digest({ ...seed, approval }), subjectDigest: digest(seed.subject),
+    transactionId: seed.transactionId, githubRunId: claims.run_id,
+    githubRunAttempt: Number(claims.run_attempt),
+    workflowCommit: env.TRUSTED_SOURCE_SHA,
+    issuedAt: approval.decidedAt, expiresAt: approval.expiresAt,
+    authorityPublicKeyPem: env.SIGNING_PUBLIC_KEY_PEM,
+  };
+  return { ...unsigned, signatureBase64: sign(null,
+    Buffer.from("agentproof.release-reservation.v1\0" + stableJson(unsigned)),
+    privateKey(env).key).toString("base64") };
 }

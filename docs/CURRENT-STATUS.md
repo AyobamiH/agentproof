@@ -112,3 +112,30 @@ The same candidate preserves the bounded raw, validated HTTP 200 GitHub publicat
 PR #19 independent review identified the existing no-error-body-retention contract. The follow-up records only validated HTTP 200 publication responses; failed/malformed response bodies remain unretained, with explicit null recovery evidence and a regression test.
 
 Canary workflow PR #1 independent review identified that service build revisions and permitted caller-workflow revisions must be checked separately. The follow-up release-only health metadata exposes both, preserving the legacy sourceCommit field for guarded monitoring. Production activation remains pending; a new AgentProof merge requires another unchanged-key patch re-pin and real 17-check canary before closeout.
+
+
+### 18 October: pre-publication refusal and guarded recovery candidate
+
+Protected release run [39118530819](https://github.com/AyobamiH/agentproof-release-canary/actions/runs/39118530819)
+authorised DoneState run `12741172-631f-47b4-88c2-a63eeb1f9574`, but GitHub observation in preparation
+was refused before any execution request. Release `416342082` remains an unpublished draft.
+The adapter omitted GitHub's mandatory User-Agent header; a read-only request without it reproduced HTTP 403.
+This change supplies the application identity and signs an immutable reservation when an exact seed
+first wins the existing permanent fence. A reservation is not a receipt or verified outcome.
+Attempted/verified targets never expose a reusable reservation; changing a claimed seed remains forbidden.
+The separately reviewed DoneState recovery must preserve the old authorisation and all five trust keys,
+accept only a fresh exact-run reservation, and require execution after recovery. No target fence is reset.
+Current-main patch acceptance must be re-pinned after this source merge. Real release acceptance remains open.
+
+Independent PR #21 review required run-attempt binding in the reservation. The signed payload now includes the authenticated numeric attempt, and DoneState checks the exact run/attempt pair. Retrieving an existing reservation never relabels its producing attempt.
+
+Recovery now uses a causal signature gate: DoneState commits the preserved-authority transition before signing a domain-separated grant with its existing handoff key. AgentProof requires that exact grant to activate the same permanent reserved fence before execution. The signed completion records its digest. Timestamp checks remain additional freshness bounds, never the sole ordering proof. Withheld, forged, stale or wrong-attempt grants cannot execute; disabling recovery configuration cannot clear the stored gate.
+
+The release recovery read lane now verifies the persisted causal grant against its
+original producing attempt before settling or returning attempted/verified evidence.
+A later authenticated attempt of the same pinned workflow run may reconcile using
+GET only; it never receives new publication authority. The original signed grant
+and its digest remain unchanged. Regression coverage exercises a lost settlement,
+a later-attempt readback, tampered stored grants and read-only recovery after grant
+expiry, with the publication count fixed at one. This remains source validation,
+not a real publication or DoneState terminal outcome.

@@ -34,7 +34,11 @@
     "SIGNING_PUBLIC_KEY_PEM": "",
     "SIGNER_FINGERPRINT": "",
     "RECEIPT_PUBLIC_KEY_PEM": "",
-    "RECEIPT_FINGERPRINT": ""
+    "RECEIPT_FINGERPRINT": "",
+    "RECOVERY_REQUIRED": "true",
+    "RECOVERY_RUN_ID": "",
+    "RECOVERY_HANDOFF_FINGERPRINT": "",
+    "RECOVERY_HANDOFF_PUBLIC_KEY_PEM": ""
   },
   "observability": {
     "enabled": false

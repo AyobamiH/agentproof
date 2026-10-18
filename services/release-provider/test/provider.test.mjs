@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { generateKeyPairSync, randomUUID } from "node:crypto";
-import { digest } from "../../../dist/hash.js";
+import { generateKeyPairSync, randomUUID, createPublicKey, verify, createPrivateKey, sign } from "node:crypto";
+import { digest, stableJson } from "../../../dist/hash.js";
 import { publicKeyFingerprint } from "../../../dist/signer.js";
 import { verifyReleaseReceiptV2 } from "../../../dist/release-v1-receipt.js";
 import { validateClaims, SUBJECT, CANARY_REPOSITORY, WORKFLOW } from "../src/identity.mjs";
@@ -77,6 +77,7 @@ function githubFixture(t, options={}) {
     const url = new URL(String(input));
     assert.equal(url.origin,"https://api.github.com");
     assert.equal(init.redirect,"error");
+    assert.match(init.headers["user-agent"], /^agentproof-/);
     if (init.headers.authorization !== undefined)
       assert.equal(init.headers.authorization,"Bearer test-ephemeral-gh-token");
     else assert.equal(init.method,"GET");
@@ -210,4 +211,98 @@ test("rejected publication error bodies are not retained or returned",async t=>{
   assert(!JSON.stringify([...a.ledger]).includes("private provider error detail"));
   const recovered=await call("approval",a,"/v1/reconcile",{request:p.json.request});
   assert.equal(recovered.json.publicationResponse,null);assert.equal(api.mutationCount,1);
+});
+
+
+test("unattempted reservation is signed, durable and never returned after an attempt",async t=>{
+  const api=githubFixture(t,{failBeforeEffect:true}), a=env("approval"), draft=seed();
+  const first=await call("approval",a,"/v1/prepare",{seed:draft});
+  assert.equal(first.status,200);
+  const {signatureBase64,...unsigned}=first.json.reservation;
+  assert.equal(unsigned.requestDigest,digest(first.json.request));
+  assert.equal(unsigned.githubRunId,claims().run_id);
+  assert.equal(unsigned.githubRunAttempt,Number(claims().run_attempt));
+  assert.equal(unsigned.workflowCommit,HEAD);
+  assert(verify(null,Buffer.from("agentproof.release-reservation.v1\0"+stableJson(unsigned)),
+    createPublicKey(approvalKey.publicKeyPem),Buffer.from(signatureBase64,"base64")));
+  assert.equal(api.mutationCount,0);
+  const again=await call("approval",a,"/v1/prepare",{seed:draft});
+  assert.deepEqual(again.json,first.json);
+  const rerun=await call("approval",a,"/v1/prepare",{seed:draft},{...claims(),run_attempt:"2"});
+  assert.deepEqual(rerun.json.reservation,first.json.reservation);
+  assert.equal(rerun.json.reservation.githubRunAttempt,1);
+  assert.equal((await call("approval",a,"/v1/prepare",{seed:seed("9003")},claims("9003"))).status,409);
+  await call("approval",a,"/v1/execute",{request:first.json.request});
+  const attempted=await call("approval",a,"/v1/prepare",{seed:draft});
+  assert.equal(attempted.json.state,"attempted");assert.equal(attempted.json.reservation,null);
+  assert.equal(api.mutationCount,1);
+});
+
+
+test("recovery reservation cannot execute until a distinct signed committed-authority grant activates it",async t=>{
+  const api=githubFixture(t),a=env('approval'),handoff=keyPair(),runId=randomUUID(),draft=seed();
+  Object.assign(a.vars,{RECOVERY_REQUIRED:'true',RECOVERY_RUN_ID:runId,
+    RECOVERY_HANDOFF_PUBLIC_KEY_PEM:handoff.publicKeyPem,RECOVERY_HANDOFF_FINGERPRINT:handoff.fingerprint});
+  const prepared=(await call('approval',a,'/v1/prepare',{seed:draft})).json;
+  const blocked=await call('approval',a,'/v1/execute',{request:prepared.request});
+  assert.equal(blocked.status,403);assert.equal(blocked.json.error,'recovery_authorisation_required');
+  assert.equal(api.mutationCount,0);assert.equal(a.ledger.get('release').state,'reserved');
+  const unsigned={schema:'donestate.release-recovery-authorisation.v1',runId,
+    transactionId:draft.transactionId,subjectDigest:digest(subject),githubRunId:claims().run_id,
+    githubRunAttempt:1,workflowCommit:HEAD,reservationDigest:digest(prepared.reservation),
+    authorisationAuditDigest:'d'.repeat(64),issuedAt:prepared.request.approval.decidedAt,
+    expiresAt:prepared.request.approval.expiresAt,publicKeyPem:handoff.publicKeyPem};
+  const signed=value=>({...value,signatureBase64:sign(null,
+    Buffer.from('donestate.release-recovery-authorisation.v1\0'+stableJson(value)),
+    createPrivateKey(handoff.privateKeyPem)).toString('base64')});
+  const grant=signed(unsigned);
+  for(const change of [{githubRunAttempt:2},{githubRunId:'9999'},{transactionId:randomUUID()},
+    {reservationDigest:'e'.repeat(64)},{expiresAt:unsigned.issuedAt}]) {
+    const denied=await call('approval',a,'/v1/activate',{request:prepared.request,recoveryAuthorisation:signed({...unsigned,...change})});
+    assert.equal(denied.status,403);assert.equal(a.ledger.get('release').recoveryAuthorisation,null);
+  }
+  const forged=await call('approval',a,'/v1/activate',{request:prepared.request,
+    recoveryAuthorisation:{...grant,signatureBase64:'A'.repeat(86)+'=='}});assert.equal(forged.status,403);
+  a.vars.RECOVERY_REQUIRED='false';
+  assert.equal((await call('approval',a,'/v1/execute',{request:prepared.request})).status,403);
+  assert.equal(api.mutationCount,0);a.vars.RECOVERY_REQUIRED='true';
+  const active=await call('approval',a,'/v1/activate',{request:prepared.request,recoveryAuthorisation:grant});
+  assert.equal(active.status,200);assert.equal(active.json.recoveryAuthorisationDigest,digest(grant));
+  assert.deepEqual((await call('approval',a,'/v1/activate',{request:prepared.request,recoveryAuthorisation:grant})).json,active.json);
+  const completed=await call('approval',a,'/v1/execute',{request:prepared.request});
+  assert.equal(completed.json.state,'verified');assert.equal(api.mutationCount,1);
+  assert.equal(completed.json.completion.recoveryAuthorisationDigest,digest(grant));
+  const signer=env('signing');
+  const missing=await call('signing',signer,'/v1/sign',{request:prepared.request,completion:completed.json.completion});
+  assert.equal(missing.status,403);assert.equal(signer.ledger.get('receipt'),undefined);
+  signer.vars.RECOVERY_REQUIRED='true';
+  const signedReceipt=await call('signing',signer,'/v1/sign',{request:prepared.request,completion:completed.json.completion});
+  assert.equal(signedReceipt.status,200);assert.equal(signedReceipt.json.state,'signed');
+  assert.equal(verifyReleaseReceiptV2(signedReceipt.json.receipt,{subject,
+    issuer:'agentproof.release-canary.authority.v1',authorityFingerprints:[approvalKey.fingerprint],
+    signerFingerprint:receiptKey.fingerprint,signerKeyId:'agentproof.release-canary.receipts.v1'}).trusted,true);
+  await call('approval',a,'/v1/execute',{request:prepared.request});assert.equal(api.mutationCount,1);
+  const laterAttempt={...claims(),run_attempt:'2'};
+  const committed=a.ledger.get('release');
+  // Simulate losing settlement after the sole external effect.
+  a.ledger.set('release',{...committed,state:'attempted',completion:null,after:null,verifiedAt:null});
+  const reconciled=await call('approval',a,'/v1/reconcile',{request:prepared.request},laterAttempt);
+  assert.equal(reconciled.status,200);assert.equal(reconciled.json.state,'verified');
+  assert.equal(reconciled.json.completion.recoveryAuthorisationDigest,digest(grant));
+  assert.equal(api.mutationCount,1);
+  const retained=a.ledger.get('release');
+  assert.deepEqual(retained.recoveryAuthorisation,grant);
+  a.ledger.set('release',{...retained,recoveryAuthorisation:{...grant,signatureBase64:'A'.repeat(86)+'=='}});
+  for(const path of ['/v1/reconcile','/v1/execute']){
+    const invalid=await call('approval',a,path,{request:prepared.request},laterAttempt);
+    assert.equal(invalid.status,403);assert.equal(api.mutationCount,1);
+  }
+  a.ledger.set('release',retained);
+  const afterExpiry=Date.parse(grant.expiresAt)+1000;
+  t.mock.method(Date,'now',()=>afterExpiry);
+  const historical=await call('approval',a,'/v1/reconcile',{request:prepared.request},laterAttempt);
+  assert.equal(historical.status,200);
+  assert.deepEqual(historical.json.completion,reconciled.json.completion);
+  assert.equal(api.mutationCount,1);
+
 });

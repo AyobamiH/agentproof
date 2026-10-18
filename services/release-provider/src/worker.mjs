@@ -1,9 +1,10 @@
+import { recoveryPolicy, validateRecoveryGrant, validateRecordedRecoveryGrant } from "./recovery.mjs";
 import { digest, stableJson } from "../../../dist/hash.js";
 import { validateReleaseObservation } from "../../../dist/release-v1-contract.js";
 import { authenticate, githubToken, demand, ReleaseRefusal } from "./identity.mjs";
 import { strictBody, readTarget, privateKey, provider, validateSeed,
   decision, validateSignedRequest, signCompletion, validateCompletion,
-  verifiedReceipt, targetScope, policy } from "./policy.mjs";
+  verifiedReceipt, targetScope, policy, reservationEvidence } from "./policy.mjs";
 
 function reply(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -43,11 +44,11 @@ export async function handle(request, env, auth = authenticate) {
       return reply({ service: "agentproof-release-canary", role: env.ROLE,
         enabled: env.ENABLED === "true", custody: "cloudflare-encrypted-worker-secret",
         sourceCommit: env.TRUSTED_SOURCE_SHA, trustedWorkflowCommit: env.TRUSTED_SOURCE_SHA,
-        serviceSourceCommit: env.SERVICE_SOURCE_SHA ?? null, targetConfigured: !!env.TARGET_SUBJECT_JSON });
+        serviceSourceCommit: env.SERVICE_SOURCE_SHA ?? null, recoveryRequired: env.RECOVERY_REQUIRED === "true", targetConfigured: !!env.TARGET_SUBJECT_JSON });
     }
     demand(env.ROLE === "approval" || env.ROLE === "signing", "role_invalid", 503);
     const paths = env.ROLE === "approval" ?
-      ["/v1/prepare", "/v1/execute", "/v1/reconcile"] : ["/v1/sign"];
+      ["/v1/prepare", "/v1/activate", "/v1/execute", "/v1/reconcile"] : ["/v1/sign"];
     demand(request.method === "POST" && paths.includes(url.pathname), "route_not_found", 404);
     const claims = await auth(request, env);
     // A receipt signer never receives the caller's release-write credential.
@@ -89,7 +90,8 @@ export class ReleaseFence {
     const previous = this.get();
     if (previous) {
       sameSeed(previous, seed);
-      return { state: previous.state, request: { ...previous.seed, approval: previous.approval } };
+      return { state: previous.state, request: { ...previous.seed, approval: previous.approval },
+        reservation: previous.state === "reserved" ? previous.reservation ?? null : null };
     }
     const before = await provider(seed.subject, token).observe(seed.subject);
     validateReleaseObservation(before, seed.subject, false);
@@ -99,16 +101,21 @@ export class ReleaseFence {
       const current = this.get();
       if (current) { sameSeed(current, seed); return current; }
       const approval = decision(seed, this.env);
-      const value = { state: "reserved", seed, approval, before,
+      const reservation = reservationEvidence(seed, approval, claims, this.env);
+      const value = { state: "reserved", seed, approval, before, reservation,
+        recoveryPolicy: recoveryPolicy(this.env), recoveryAuthorisation: null,
         attemptedAt: null, verifiedAt: null, after: null, completion: null, publicationResponse: null };
       this.set(value);
       return value;
     });
-    return { state: record.state, request: { ...record.seed, approval: record.approval } };
+    return { state: record.state, request: { ...record.seed, approval: record.approval },
+      reservation: record.state === "reserved" ? record.reservation ?? null : null };
   }
-  async observeAndSettle(seed, token) {
+  async observeAndSettle(seed, token, claims) {
     let record = this.get();
     sameSeed(record, seed);
+    if (record.state === "attempted" || record.state === "verified")
+      validateRecordedRecoveryGrant(record, claims, this.env);
     if (record.state === "verified") return { state: record.state, completion: record.completion, publicationResponse: record.publicationResponse ?? null };
     if (record.state !== "attempted") return { state: record.state, completion: null };
     let after;
@@ -133,6 +140,21 @@ export class ReleaseFence {
     });
     return { state: settled.state, completion: settled.completion, publicationResponse: settled.publicationResponse ?? null };
   }
+  activate(request, grant, claims) {
+    const {seed}=validateSignedRequest(request,claims,this.env);
+    return once(this.storage,()=>{
+      const record=this.get();demand(record,"approval_reservation_missing");sameSeed(record,seed);
+      demand(stableJson(record.approval)===stableJson(request.approval),"approval_not_reserved");
+      if(record.recoveryAuthorisation) {
+        demand(digest(record.recoveryAuthorisation)===digest(grant),"recovery_grant_changed");
+        return {state:record.state,recoveryAuthorisationDigest:digest(record.recoveryAuthorisation)};
+      }
+      demand(record.state==="reserved","recovery_after_attempt_forbidden",409);
+      validateRecoveryGrant(grant,record,claims,this.env);
+      this.set({...record,recoveryAuthorisation:grant});
+      return {state:"reserved",recoveryAuthorisationDigest:digest(grant)};
+    });
+  }
   async execute(request, claims, token) {
     const { seed } = validateSignedRequest(request, claims, this.env);
     const previous = this.get();
@@ -140,7 +162,13 @@ export class ReleaseFence {
     sameSeed(previous, seed);
     demand(stableJson(previous.approval) === stableJson(request.approval),
       "approval_not_reserved", 403);
-    if (previous.state !== "reserved") return this.observeAndSettle(seed, token);
+    if (previous.state !== "reserved") return this.observeAndSettle(seed, token, claims);
+    demand(stableJson(previous.recoveryPolicy ?? null)===stableJson(recoveryPolicy(this.env)),
+      "recovery_policy_changed");
+    if(previous.recoveryPolicy) {
+      demand(previous.recoveryAuthorisation,"recovery_authorisation_required");
+      validateRecoveryGrant(previous.recoveryAuthorisation,previous,claims,this.env);
+    }
     // Verify pre-state before permanently marking the ONE allowed attempt.
     const current = await provider(seed.subject, token).observe(seed.subject);
     validateReleaseObservation(current, seed.subject, false);
@@ -154,7 +182,7 @@ export class ReleaseFence {
       this.set({ ...record, state: "attempted", attemptedAt: new Date().toISOString() });
       return true;
     });
-    if (!claimed) return this.observeAndSettle(seed, token);
+    if (!claimed) return this.observeAndSettle(seed, token, claims);
     const publisher = provider(seed.subject, token);
     try {
       // Exactly one GitHub PATCH in the entire lifetime of this target fence.
@@ -171,17 +199,18 @@ export class ReleaseFence {
         this.set({ ...record, publicationResponse: publisher.publicationResponse });
       });
     }
-    return this.observeAndSettle(seed, token);
+    return this.observeAndSettle(seed, token, claims);
   }
   async fetch(request) {
     try {
       const { body, claims, token } = await request.json();
       const path = new URL(request.url).pathname;
       if (path === "/v1/prepare") return reply(await this.prepare(body.seed, claims, token));
+      if (path === "/v1/activate") return reply(this.activate(body.request,body.recoveryAuthorisation,claims));
       if (path === "/v1/execute") return reply(await this.execute(body.request, claims, token));
       demand(path === "/v1/reconcile", "route_not_found", 404);
       const { seed } = validateSignedRequest(body.request, claims, this.env, { historical: true });
-      return reply(await this.observeAndSettle(seed, token));
+      return reply(await this.observeAndSettle(seed, token, claims));
     } catch (error) { return failure(error); }
   }
 }
