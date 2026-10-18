@@ -110,3 +110,5 @@ necessary compatibility correction requires a new exact-source re-pin and canary
 The same candidate preserves the bounded raw, validated HTTP 200 GitHub publication-response body, status and request ID in the release Durable Object and returns it during read-only reconciliation. Network loss remains explicit null evidence; it never causes a second publication attempt. Provider tests cover exact response persistence, canonical seconds-precision readback and lost-response recovery.
 
 PR #19 independent review identified the existing no-error-body-retention contract. The follow-up records only validated HTTP 200 publication responses; failed/malformed response bodies remain unretained, with explicit null recovery evidence and a regression test.
+
+Canary workflow PR #1 independent review identified that service build revisions and permitted caller-workflow revisions must be checked separately. The follow-up release-only health metadata exposes both, preserving the legacy sourceCommit field for guarded monitoring. Production activation remains pending; a new AgentProof merge requires another unchanged-key patch re-pin and real 17-check canary before closeout.
