@@ -105,13 +105,15 @@ function githubFixture(t, options={}) {
       assert.equal(state.mutationCount,1);
       assert.deepEqual(JSON.parse(init.body),{draft:false,prerelease:true,make_latest:"false"});
       if(options.failBeforeEffect) throw Error("network_failed_pre_effect");
-      state.published=true;state.publishedAt=new Date().toISOString();
+      if(options.rejected) return new Response('{"message":"private provider error detail"}', {
+        status:403,headers:{"content-type":"application/json"}});
+      state.published=true;state.publishedAt=new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
       if(options.lostResponse) throw Error("network_lost_after_effect");
       payload={id:subject.releaseId,tag_name:subject.tagName,
         draft:false,prerelease:true};
     } else throw Error("unanticipated provider request");
     return new Response(JSON.stringify(payload),{status:200,
-      headers:{"content-type":"application/json"}});
+      headers:{"content-type":"application/json", "x-github-request-id":"fixture-request-1"}});
   });
   return state;
 }
@@ -144,8 +146,15 @@ test("one durable global target claim, one GitHub publication and separate signe
   const done=await call("approval",a,"/v1/execute",{request});
   assert.equal(done.status,200);assert.equal(done.json.state,"verified");
   assert.equal(api.mutationCount,1);
+  assert.deepEqual(done.json.publicationResponse, {
+    status: 200, requestId: "fixture-request-1",
+    body: JSON.stringify({id:subject.releaseId,tag_name:subject.tagName,draft:false,prerelease:true}),
+  });
+  assert.deepEqual(a.ledger.get("release").publicationResponse, done.json.publicationResponse);
+  assert.match(done.json.completion.after.publishedAt, /\.000Z$/);
   const again=await call("approval",a,"/v1/execute",{request});
   assert.equal(again.json.state,"verified");assert.equal(api.mutationCount,1);
+  assert.deepEqual(again.json.publicationResponse,done.json.publicationResponse);
   const receipt=await call("signing",s,"/v1/sign",{request,completion:done.json.completion});
   assert.equal(receipt.status,200);assert.equal(receipt.json.state,"signed");
   const checked=verifyReleaseReceiptV2(receipt.json.receipt,{
@@ -166,6 +175,7 @@ test("lost provider response may reconcile but never publishes twice",async t=>{
   const first=await call("approval",a,"/v1/prepare",{seed:seed()});
   const one=await call("approval",a,"/v1/execute",{request:first.json.request});
   assert.equal(one.json.state,"verified");
+  assert.equal(one.json.publicationResponse,null);
   const two=await call("approval",a,"/v1/reconcile",{request:first.json.request});
   assert.equal(two.json.state,"verified");assert.equal(api.mutationCount,1);
 });
@@ -189,4 +199,15 @@ test("receipt signer refuses unverified completion or modified authority",async 
   const altered={...x.json.completion,subjectDigest:"f".repeat(64)};
   const deny=await call("signing",s,"/v1/sign",{request:p.json.request,completion:altered});
   assert.equal(deny.status,403);assert.equal(api.mutationCount,1);
+});
+
+test("rejected publication error bodies are not retained or returned",async t=>{
+  const api=githubFixture(t,{rejected:true}),a=env("approval");
+  const p=await call("approval",a,"/v1/prepare",{seed:seed()});
+  const result=await call("approval",a,"/v1/execute",{request:p.json.request});
+  assert.equal(result.json.state,"attempted");assert.equal(result.json.publicationResponse,null);
+  assert.equal(a.ledger.get("release").publicationResponse,null);
+  assert(!JSON.stringify([...a.ledger]).includes("private provider error detail"));
+  const recovered=await call("approval",a,"/v1/reconcile",{request:p.json.request});
+  assert.equal(recovered.json.publicationResponse,null);assert.equal(api.mutationCount,1);
 });

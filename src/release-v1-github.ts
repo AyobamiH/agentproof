@@ -2,6 +2,9 @@ import { parseJsonStrict } from "./strict-json.js";
 import { releaseAssert, validateReleaseObservation, validateReleaseSubject,
   type ReleaseV1Provider, type ReleaseV1Subject, type ReleaseV1Observation } from "./release-v1-contract.js";
 
+export interface GitHubPublicationResponse {
+  status: number; requestId: string | null; body: string;
+}
 export interface GitHubReleaseClientOptions {
   // Host injects a short-lived token. It is not logged or persisted.
   getToken: (signal: AbortSignal) => Promise<string>;
@@ -11,8 +14,23 @@ function id(value: unknown, code: string): number {
   releaseAssert(Number.isSafeInteger(value) && Number(value) > 0, code);
   return Number(value);
 }
+/** Convert GitHub's seconds-precision UTC timestamp at the provider boundary.
+ * Signed protocol timestamps remain canonical millisecond-precision UTC. */
+export function canonicalGitHubPublishedAt(value: unknown): string | null {
+  if (value === null) return null;
+  releaseAssert(typeof value === "string" &&
+    /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(value),
+    "github_publication_time_invalid");
+  const canonical = value.includes(".") ? value : value.slice(0, -1) + ".000Z";
+  const time = Date.parse(canonical);
+  releaseAssert(Number.isFinite(time) && new Date(time).toISOString() === canonical,
+    "github_publication_time_invalid");
+  return canonical;
+}
 export class GitHubReleaseV1Provider implements ReleaseV1Provider {
   readonly base: string;
+  // Public response evidence only: never persist the publisher credential.
+  publicationResponse: GitHubPublicationResponse | null = null;
   constructor(readonly subject: ReleaseV1Subject, readonly options: GitHubReleaseClientOptions) {
     validateReleaseSubject(subject);
     releaseAssert(typeof options.getToken === "function" && Number.isInteger(options.timeoutMs ?? 15000) &&
@@ -34,8 +52,6 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
           "authorization": "Bearer " + token, "x-github-api-version": "2022-11-28" },
         ...(body ? { body: JSON.stringify(body) } : {}),
       });
-      releaseAssert(response.status === (method === "PATCH" ? 200 : 200) && !response.redirected &&
-        response.headers.get("content-type")?.includes("application/json"), "github_provider_unavailable");
       releaseAssert(Number(response.headers.get("content-length") ?? 0) < 262144, "github_response_oversized");
       const reader = response.body?.getReader();
       releaseAssert(reader, "github_empty_response");
@@ -50,9 +66,19 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
         }
       } finally { void reader.cancel().catch(() => {}); }
       const raw = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
+      releaseAssert(response.status === 200 && !response.redirected &&
+        response.headers.get("content-type")?.includes("application/json"), "github_provider_unavailable");
       parseJsonStrict(raw);
       const parsed: unknown = JSON.parse(raw);
       releaseAssert(parsed && typeof parsed === "object" && !Array.isArray(parsed), "github_invalid_json");
+      if (method === "PATCH") {
+        const publication = parsed as Record<string, unknown>;
+        releaseAssert(publication.id === this.subject.releaseId && publication.tag_name === this.subject.tagName &&
+          publication.draft === false && publication.prerelease === true, "github_publish_response_unexpected");
+        this.publicationResponse = {
+          status: response.status, requestId: response.headers.get("x-github-request-id"), body: raw,
+        };
+      }
       return parsed as Record<string, any>;
     } catch (error) {
       if (error instanceof Error && error.message.startsWith("release_v1:")) throw error;
@@ -91,7 +117,7 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
       releaseId: release.id, tagName: release.tag_name, tagCommit: commit,
       packageAssetId: asset.id, packageAssetName: asset.name, packageDigest: asset.digest,
       provenanceAssetId: provenance.id, provenanceDigest: provenance.digest, assetCount: release.assets.length,
-      draft: release.draft, prerelease: release.prerelease, publishedAt: release.published_at,
+      draft: release.draft, prerelease: release.prerelease, publishedAt: canonicalGitHubPublishedAt(release.published_at),
     };
     // Preserve raw observation for the coordinator to distinguish draft vs published.
     validateReleaseObservation(observation, target, !observation.draft);

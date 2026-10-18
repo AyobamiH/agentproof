@@ -99,7 +99,7 @@ export class ReleaseFence {
       if (current) { sameSeed(current, seed); return current; }
       const approval = decision(seed, this.env);
       const value = { state: "reserved", seed, approval, before,
-        attemptedAt: null, verifiedAt: null, after: null, completion: null };
+        attemptedAt: null, verifiedAt: null, after: null, completion: null, publicationResponse: null };
       this.set(value);
       return value;
     });
@@ -108,14 +108,15 @@ export class ReleaseFence {
   async observeAndSettle(seed, token) {
     let record = this.get();
     sameSeed(record, seed);
-    if (record.state === "verified") return { state: record.state, completion: record.completion };
+    if (record.state === "verified") return { state: record.state, completion: record.completion, publicationResponse: record.publicationResponse ?? null };
     if (record.state !== "attempted") return { state: record.state, completion: null };
     let after;
     try {
       after = await provider(seed.subject, token).observe(seed.subject);
       validateReleaseObservation(after, seed.subject, true);
     } catch {
-      return { state: "attempted", completion: null, reason: "effect_ambiguous" };
+      return { state: "attempted", completion: null, reason: "effect_ambiguous",
+        publicationResponse: this.get().publicationResponse ?? null };
     }
     const settled = once(this.storage, () => {
       const current = this.get();
@@ -129,7 +130,7 @@ export class ReleaseFence {
       this.set(next);
       return next;
     });
-    return { state: settled.state, completion: settled.completion };
+    return { state: settled.state, completion: settled.completion, publicationResponse: settled.publicationResponse ?? null };
   }
   async execute(request, claims, token) {
     const { seed } = validateSignedRequest(request, claims, this.env);
@@ -153,12 +154,21 @@ export class ReleaseFence {
       return true;
     });
     if (!claimed) return this.observeAndSettle(seed, token);
+    const publisher = provider(seed.subject, token);
     try {
       // Exactly one GitHub PATCH in the entire lifetime of this target fence.
-      await provider(seed.subject, token).publishDraft(seed.subject);
+      await publisher.publishDraft(seed.subject);
     } catch {
       // Lost response can mean that GitHub already published the release.
       // Never mutate again; inspect provider state and settle when observable.
+    } finally {
+      // Preserve the exact bounded response body and request ID when received.
+      // A lost response remains null, never a fabricated success response.
+      if (publisher.publicationResponse) once(this.storage, () => {
+        const record = this.get();
+        sameSeed(record, seed);
+        this.set({ ...record, publicationResponse: publisher.publicationResponse });
+      });
     }
     return this.observeAndSettle(seed, token);
   }
