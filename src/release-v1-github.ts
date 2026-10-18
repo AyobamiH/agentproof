@@ -49,7 +49,8 @@ export class GitHubReleaseV1Provider implements ReleaseV1Provider {
       const response = await fetch(this.base + suffix, {
         method, redirect: "error", cache: "no-store", signal: controller.signal,
         headers: { "accept": "application/vnd.github+json", "content-type": "application/json",
-          "authorization": "Bearer " + token, "x-github-api-version": "2022-11-28" },
+          "authorization": "Bearer " + token, "x-github-api-version": "2022-11-28",
+          "user-agent": "agentproof-release-provider/1.0" },
         ...(body ? { body: JSON.stringify(body) } : {}),
       });
       releaseAssert(Number(response.headers.get("content-length") ?? 0) < 262144, "github_response_oversized");

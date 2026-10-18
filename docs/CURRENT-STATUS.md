@@ -112,3 +112,17 @@ The same candidate preserves the bounded raw, validated HTTP 200 GitHub publicat
 PR #19 independent review identified the existing no-error-body-retention contract. The follow-up records only validated HTTP 200 publication responses; failed/malformed response bodies remain unretained, with explicit null recovery evidence and a regression test.
 
 Canary workflow PR #1 independent review identified that service build revisions and permitted caller-workflow revisions must be checked separately. The follow-up release-only health metadata exposes both, preserving the legacy sourceCommit field for guarded monitoring. Production activation remains pending; a new AgentProof merge requires another unchanged-key patch re-pin and real 17-check canary before closeout.
+
+
+### 18 October: pre-publication refusal and guarded recovery candidate
+
+Protected release run [39118530819](https://github.com/AyobamiH/agentproof-release-canary/actions/runs/39118530819)
+authorised DoneState run `12741172-631f-47b4-88c2-a63eeb1f9574`, but GitHub observation in preparation
+was refused before any execution request. Release `416342082` remains an unpublished draft.
+The adapter omitted GitHub's mandatory User-Agent header; a read-only request without it reproduced HTTP 403.
+This change supplies the application identity and signs an immutable reservation when an exact seed
+first wins the existing permanent fence. A reservation is not a receipt or verified outcome.
+Attempted/verified targets never expose a reusable reservation; changing a claimed seed remains forbidden.
+The separately reviewed DoneState recovery must preserve the old authorisation and all five trust keys,
+accept only a fresh exact-run reservation, and require execution after recovery. No target fence is reset.
+Current-main patch acceptance must be re-pinned after this source merge. Real release acceptance remains open.

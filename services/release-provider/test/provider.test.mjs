@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { generateKeyPairSync, randomUUID } from "node:crypto";
-import { digest } from "../../../dist/hash.js";
+import { generateKeyPairSync, randomUUID, createPublicKey, verify } from "node:crypto";
+import { digest, stableJson } from "../../../dist/hash.js";
 import { publicKeyFingerprint } from "../../../dist/signer.js";
 import { verifyReleaseReceiptV2 } from "../../../dist/release-v1-receipt.js";
 import { validateClaims, SUBJECT, CANARY_REPOSITORY, WORKFLOW } from "../src/identity.mjs";
@@ -77,6 +77,7 @@ function githubFixture(t, options={}) {
     const url = new URL(String(input));
     assert.equal(url.origin,"https://api.github.com");
     assert.equal(init.redirect,"error");
+    assert.match(init.headers["user-agent"], /^agentproof-/);
     if (init.headers.authorization !== undefined)
       assert.equal(init.headers.authorization,"Bearer test-ephemeral-gh-token");
     else assert.equal(init.method,"GET");
@@ -210,4 +211,25 @@ test("rejected publication error bodies are not retained or returned",async t=>{
   assert(!JSON.stringify([...a.ledger]).includes("private provider error detail"));
   const recovered=await call("approval",a,"/v1/reconcile",{request:p.json.request});
   assert.equal(recovered.json.publicationResponse,null);assert.equal(api.mutationCount,1);
+});
+
+
+test("unattempted reservation is signed, durable and never returned after an attempt",async t=>{
+  const api=githubFixture(t,{failBeforeEffect:true}), a=env("approval"), draft=seed();
+  const first=await call("approval",a,"/v1/prepare",{seed:draft});
+  assert.equal(first.status,200);
+  const {signatureBase64,...unsigned}=first.json.reservation;
+  assert.equal(unsigned.requestDigest,digest(first.json.request));
+  assert.equal(unsigned.githubRunId,claims().run_id);
+  assert.equal(unsigned.workflowCommit,HEAD);
+  assert(verify(null,Buffer.from("agentproof.release-reservation.v1\0"+stableJson(unsigned)),
+    createPublicKey(approvalKey.publicKeyPem),Buffer.from(signatureBase64,"base64")));
+  assert.equal(api.mutationCount,0);
+  const again=await call("approval",a,"/v1/prepare",{seed:draft});
+  assert.deepEqual(again.json,first.json);
+  assert.equal((await call("approval",a,"/v1/prepare",{seed:seed("9003")},claims("9003"))).status,409);
+  await call("approval",a,"/v1/execute",{request:first.json.request});
+  const attempted=await call("approval",a,"/v1/prepare",{seed:draft});
+  assert.equal(attempted.json.state,"attempted");assert.equal(attempted.json.reservation,null);
+  assert.equal(api.mutationCount,1);
 });

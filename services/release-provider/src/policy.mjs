@@ -215,3 +215,19 @@ export async function verifiedReceipt({ request, completion, env }) {
 export function targetScope(subject) {
   return subject.repositoryId + ":" + subject.releaseId;
 }
+
+// A reservation proves that this exact seed won the permanent target fence.
+// It is never a publication receipt and cannot attest an external outcome.
+export function reservationEvidence(seed, approval, claims, env) {
+  const unsigned = {
+    schema: "agentproof.release-reservation.v1", state: "reserved",
+    requestDigest: digest({ ...seed, approval }), subjectDigest: digest(seed.subject),
+    transactionId: seed.transactionId, githubRunId: claims.run_id,
+    workflowCommit: env.TRUSTED_SOURCE_SHA,
+    issuedAt: approval.decidedAt, expiresAt: approval.expiresAt,
+    authorityPublicKeyPem: env.SIGNING_PUBLIC_KEY_PEM,
+  };
+  return { ...unsigned, signatureBase64: sign(null,
+    Buffer.from("agentproof.release-reservation.v1\0" + stableJson(unsigned)),
+    privateKey(env).key).toString("base64") };
+}

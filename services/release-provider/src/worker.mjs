@@ -3,7 +3,7 @@ import { validateReleaseObservation } from "../../../dist/release-v1-contract.js
 import { authenticate, githubToken, demand, ReleaseRefusal } from "./identity.mjs";
 import { strictBody, readTarget, privateKey, provider, validateSeed,
   decision, validateSignedRequest, signCompletion, validateCompletion,
-  verifiedReceipt, targetScope, policy } from "./policy.mjs";
+  verifiedReceipt, targetScope, policy, reservationEvidence } from "./policy.mjs";
 
 function reply(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -89,7 +89,8 @@ export class ReleaseFence {
     const previous = this.get();
     if (previous) {
       sameSeed(previous, seed);
-      return { state: previous.state, request: { ...previous.seed, approval: previous.approval } };
+      return { state: previous.state, request: { ...previous.seed, approval: previous.approval },
+        reservation: previous.state === "reserved" ? previous.reservation ?? null : null };
     }
     const before = await provider(seed.subject, token).observe(seed.subject);
     validateReleaseObservation(before, seed.subject, false);
@@ -99,12 +100,14 @@ export class ReleaseFence {
       const current = this.get();
       if (current) { sameSeed(current, seed); return current; }
       const approval = decision(seed, this.env);
-      const value = { state: "reserved", seed, approval, before,
+      const reservation = reservationEvidence(seed, approval, claims, this.env);
+      const value = { state: "reserved", seed, approval, before, reservation,
         attemptedAt: null, verifiedAt: null, after: null, completion: null, publicationResponse: null };
       this.set(value);
       return value;
     });
-    return { state: record.state, request: { ...record.seed, approval: record.approval } };
+    return { state: record.state, request: { ...record.seed, approval: record.approval },
+      reservation: record.state === "reserved" ? record.reservation ?? null : null };
   }
   async observeAndSettle(seed, token) {
     let record = this.get();
