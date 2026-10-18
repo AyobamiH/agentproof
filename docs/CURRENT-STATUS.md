@@ -126,3 +126,7 @@ Attempted/verified targets never expose a reusable reservation; changing a claim
 The separately reviewed DoneState recovery must preserve the old authorisation and all five trust keys,
 accept only a fresh exact-run reservation, and require execution after recovery. No target fence is reset.
 Current-main patch acceptance must be re-pinned after this source merge. Real release acceptance remains open.
+
+Independent PR #21 review required run-attempt binding in the reservation. The signed payload now includes the authenticated numeric attempt, and DoneState checks the exact run/attempt pair. Retrieving an existing reservation never relabels its producing attempt.
+
+Recovery now uses a causal signature gate: DoneState commits the preserved-authority transition before signing a domain-separated grant with its existing handoff key. AgentProof requires that exact grant to activate the same permanent reserved fence before execution. The signed completion records its digest. Timestamp checks remain additional freshness bounds, never the sole ordering proof. Withheld, forged, stale or wrong-attempt grants cannot execute; disabling recovery configuration cannot clear the stored gate.

@@ -117,6 +117,7 @@ export function completionUnsigned(record, env) {
     subjectDigest: digest(record.seed.subject),
     attemptedAt: record.attemptedAt, verifiedAt: record.verifiedAt,
     before: record.before, after: record.after,
+    recoveryAuthorisationDigest: record.recoveryAuthorisation ? digest(record.recoveryAuthorisation) : null,
   };
 }
 export function signCompletion(record, env) {
@@ -126,7 +127,7 @@ export function signCompletion(record, env) {
 }
 export function validateCompletion(completion, request, env) {
   exactKeys(completion, ["schema", "sourceCommit", "transactionId", "requestDigest",
-    "subjectDigest", "attemptedAt", "verifiedAt", "before", "after", "signatureBase64"],
+    "subjectDigest", "attemptedAt", "verifiedAt", "before", "after", "recoveryAuthorisationDigest", "signatureBase64"],
   "completion_shape");
   const { signatureBase64, ...unsigned } = completion;
   demand(completion.schema === "agentproof.release-canary.execution-evidence.v1" &&
@@ -135,6 +136,8 @@ export function validateCompletion(completion, request, env) {
     completion.requestDigest === digest(seedFromRequest(request)) &&
     completion.subjectDigest === digest(request.subject),
     "invalid_execution_evidence");
+  demand(env.RECOVERY_REQUIRED === "true" ? HEX64.test(completion.recoveryAuthorisationDigest) :
+    completion.recoveryAuthorisationDigest === null, "recovery_completion_required");
   validateReleaseObservation(completion.before, request.subject, false);
   validateReleaseObservation(completion.after, request.subject, true);
   demand(typeof completion.attemptedAt === "string" &&
@@ -223,6 +226,7 @@ export function reservationEvidence(seed, approval, claims, env) {
     schema: "agentproof.release-reservation.v1", state: "reserved",
     requestDigest: digest({ ...seed, approval }), subjectDigest: digest(seed.subject),
     transactionId: seed.transactionId, githubRunId: claims.run_id,
+    githubRunAttempt: Number(claims.run_attempt),
     workflowCommit: env.TRUSTED_SOURCE_SHA,
     issuedAt: approval.decidedAt, expiresAt: approval.expiresAt,
     authorityPublicKeyPem: env.SIGNING_PUBLIC_KEY_PEM,
