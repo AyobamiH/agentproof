@@ -272,5 +272,14 @@ test("recovery reservation cannot execute until a distinct signed committed-auth
   const completed=await call('approval',a,'/v1/execute',{request:prepared.request});
   assert.equal(completed.json.state,'verified');assert.equal(api.mutationCount,1);
   assert.equal(completed.json.completion.recoveryAuthorisationDigest,digest(grant));
+  const signer=env('signing');
+  const missing=await call('signing',signer,'/v1/sign',{request:prepared.request,completion:completed.json.completion});
+  assert.equal(missing.status,403);assert.equal(signer.ledger.get('receipt'),undefined);
+  signer.vars.RECOVERY_REQUIRED='true';
+  const signedReceipt=await call('signing',signer,'/v1/sign',{request:prepared.request,completion:completed.json.completion});
+  assert.equal(signedReceipt.status,200);assert.equal(signedReceipt.json.state,'signed');
+  assert.equal(verifyReleaseReceiptV2(signedReceipt.json.receipt,{subject,
+    issuer:'agentproof.release-canary.authority.v1',authorityFingerprints:[approvalKey.fingerprint],
+    signerFingerprint:receiptKey.fingerprint,signerKeyId:'agentproof.release-canary.receipts.v1'}).trusted,true);
   await call('approval',a,'/v1/execute',{request:prepared.request});assert.equal(api.mutationCount,1);
 });

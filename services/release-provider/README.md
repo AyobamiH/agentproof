@@ -25,3 +25,16 @@ Activation additionally requires a real test-only draft with exactly two indepen
 ## Separate deployed-source and caller-source identities
 
 The health response retains legacy sourceCommit as the trusted GitHub workflow revision for existing disabled-state monitoring. trustedWorkflowCommit makes that meaning explicit; serviceSourceCommit separately identifies the reviewed AgentProof build revision configured by the deployment process. An unset service revision is null and cannot satisfy production acceptance. The canary checks both identities, and deployment evidence additionally records the Cloudflare version and exact source checkout. No authentication, signing or publication authority changes.
+
+
+## Recovery activation configuration
+
+Both committed release Worker configurations require recovery by default while remaining disabled.
+An activation must set `RECOVERY_REQUIRED=true` on both approval and receipt-signing Workers,
+and pin `RECOVERY_RUN_ID`, `RECOVERY_HANDOFF_FINGERPRINT`, and `RECOVERY_HANDOFF_PUBLIC_KEY_PEM`
+to the preserved DoneState run and its unchanged handoff role. `/health` exposes `recoveryRequired`;
+the protected workflow checks both roles before publication. A recovered completion's non-null
+grant digest is refused by an unconfigured receipt signer. Provider tests carry recovery all the
+way through separate receipt issuance and independently verify that receipt.
+The signed reservation itself binds this recovery-required fence policy, so DoneState cannot
+accept an ungated reservation. Never reset a target fence or replace an attempted seed.

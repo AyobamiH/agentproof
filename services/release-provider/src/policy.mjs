@@ -7,6 +7,7 @@ import { validateReleaseSubject, validateReleaseObservation, validateReleaseRequ
   validateReleaseApproval, exactKeys, releaseAssert } from "../../../dist/release-v1-contract.js";
 import { releasePayload, signReleaseReceiptV2 } from "../../../dist/release-v1-receipt.js";
 import { demand, ReleaseRefusal } from "./identity.mjs";
+import { recoveryPolicy } from "./recovery.mjs";
 
 export const AUTHORITY_ISSUER = "agentproof.release-canary.authority.v1";
 export const RECEIPT_KEY_ID = "agentproof.release-canary.receipts.v1";
@@ -223,7 +224,7 @@ export function targetScope(subject) {
 // It is never a publication receipt and cannot attest an external outcome.
 export function reservationEvidence(seed, approval, claims, env) {
   const unsigned = {
-    schema: "agentproof.release-reservation.v1", state: "reserved",
+    schema: "agentproof.release-reservation.v1", state: "reserved", recoveryPolicy: recoveryPolicy(env),
     requestDigest: digest({ ...seed, approval }), subjectDigest: digest(seed.subject),
     transactionId: seed.transactionId, githubRunId: claims.run_id,
     githubRunAttempt: Number(claims.run_attempt),
