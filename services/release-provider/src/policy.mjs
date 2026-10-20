@@ -28,8 +28,9 @@ export function strictBody(raw) {
     throw new ReleaseRefusal("invalid_json", 400);
   }
 }
-export function readTarget(env) {
-  demand(env.ENABLED === "true", "provider_disabled", 503);
+export function readTarget(env, { recovery = false } = {}) {
+  demand((recovery ? env.READBACK_RECOVERY_ENABLED : env.ENABLED) === "true",
+    recovery ? "readback_recovery_disabled" : "provider_disabled", 503);
   demand(typeof env.TARGET_SUBJECT_JSON === "string" &&
     env.TARGET_SUBJECT_JSON.length > 50 && env.TARGET_SUBJECT_JSON.length < 4096,
     "target_unconfigured", 503);
@@ -62,13 +63,16 @@ export function seedFromRequest(request) {
   const { approval, ...seed } = request;
   return seed;
 }
-export function validateSeed(seed, claims, env) {
+export function validateSeed(seed, claims, env, options = {}) {
+  return validateBoundSeed(seed, claims.run_id, env, options);
+}
+export function validateBoundSeed(seed, githubRunId, env, options = {}) {
   exactKeys(seed, ["stateDirectory", "transactionId", "nonce", "idempotencyKey", "subject"],
     "seed_shape");
-  const subject = readTarget(env);
+  const subject = readTarget(env, options);
   demand(digest(seed.subject) === digest(subject), "target_not_allowed");
-  const stamp = "release-canary:" + claims.run_id;
-  demand(seed.stateDirectory === "/tmp/agentproof-release-canary-" + claims.run_id &&
+  const stamp = "release-canary:" + githubRunId;
+  demand(seed.stateDirectory === "/tmp/agentproof-release-canary-" + githubRunId &&
     seed.nonce === stamp && seed.idempotencyKey === stamp &&
     typeof seed.transactionId === "string" &&
     /^[0-9a-f-]{36}$/.test(seed.transactionId), "run_identity_rejected");
@@ -97,11 +101,11 @@ export function decision(seed, env, now = Date.now()) {
   return { ...unsigned,
     signatureBase64: sign(null, Buffer.from(stableJson(unsigned)), key).toString("base64") };
 }
-export function validateSignedRequest(request, claims, env, { historical = false } = {}) {
+export function validateSignedRequest(request, claims, env, { historical = false, recovery = false } = {}) {
   exactKeys(request, ["stateDirectory", "transactionId", "nonce", "idempotencyKey",
     "subject", "approval"], "release_request");
   const seed = seedFromRequest(request);
-  const subject = validateSeed(seed, claims, env);
+  const subject = validateSeed(seed, claims, env, { recovery });
   if (historical) {
     validateReleaseApproval(request.approval, request, policy(env, subject), Date.now(), true);
   } else {
@@ -126,7 +130,7 @@ export function signCompletion(record, env) {
   return { ...raw,
     signatureBase64: sign(null, Buffer.from(stableJson(raw)), privateKey(env).key).toString("base64") };
 }
-export function validateCompletion(completion, request, env) {
+export function validateCompletion(completion, request, env, { historical = false, now = Date.now() } = {}) {
   exactKeys(completion, ["schema", "sourceCommit", "transactionId", "requestDigest",
     "subjectDigest", "attemptedAt", "verifiedAt", "before", "after", "recoveryAuthorisationDigest", "signatureBase64"],
   "completion_shape");
@@ -145,15 +149,17 @@ export function validateCompletion(completion, request, env) {
     Date.parse(completion.attemptedAt) >= Date.parse(request.approval.decidedAt) &&
     Date.parse(completion.attemptedAt) < Date.parse(request.approval.expiresAt) &&
     Date.parse(completion.verifiedAt) >= Date.parse(completion.attemptedAt) &&
-    Date.parse(completion.verifiedAt) <= Date.now() + 30_000 &&
-    Date.parse(completion.verifiedAt) >= Date.now() - 600_000,
+    Date.parse(completion.verifiedAt) <= now + 30_000 &&
+    (historical || Date.parse(completion.verifiedAt) >= now - 600_000),
     "execution_time_rejected");
   demand(typeof signatureBase64 === "string" &&
     /^[A-Za-z0-9+/]{86}==$/.test(signatureBase64) &&
     Buffer.from(signatureBase64, "base64").toString("base64") === signatureBase64 &&
     verify(null, Buffer.from(stableJson(unsigned)),
-      createPublicKey(env.AUTHORITY_PUBLIC_KEY_PEM), Buffer.from(signatureBase64, "base64")) &&
-    publicKeyFingerprint(env.AUTHORITY_PUBLIC_KEY_PEM) === env.AUTHORITY_FINGERPRINT,
+      createPublicKey(env.ROLE === "approval" ? env.SIGNING_PUBLIC_KEY_PEM : env.AUTHORITY_PUBLIC_KEY_PEM),
+      Buffer.from(signatureBase64, "base64")) &&
+    publicKeyFingerprint(env.ROLE === "approval" ? env.SIGNING_PUBLIC_KEY_PEM : env.AUTHORITY_PUBLIC_KEY_PEM) ===
+      (env.ROLE === "approval" ? env.SIGNER_FINGERPRINT : env.AUTHORITY_FINGERPRINT),
     "execution_signature_rejected");
   return unsigned;
 }
@@ -166,17 +172,37 @@ export function releaseSigner(env) {
   };
 }
 async function anonymousGitHubJson(path, endpoint) {
-  const response = await fetch("https://api.github.com/repos/AyobamiH/agentproof-release-canary" + path, {
-    method: "GET", redirect: "manual", cache: "no-store",
-    headers: { accept: "application/vnd.github+json", "user-agent": "agentproof-separate-release-signer/1.0" },
-    signal: AbortSignal.timeout(12_000),
-  });
+  const signal = AbortSignal.timeout(12_000);
+  let response;
+  try {
+    response = await fetch("https://api.github.com/repos/AyobamiH/agentproof-release-canary" + path, {
+      method: "GET", redirect: "manual", cache: "no-store",
+      headers: { accept: "application/vnd.github+json", "user-agent": "agentproof-separate-release-signer/1.0" }, signal,
+    });
+  } catch { throw new ReleaseRefusal("public_readback_transport_unavailable", 503); }
   if (!response.ok || response.status !== 200) {
-    await response.body?.cancel().catch(() => {});
+    void response.body?.cancel().catch(() => {});
     throw new PublicReadbackRefusal(endpoint, response);
   }
-  const raw = await response.text();
-  demand(Buffer.byteLength(raw) <= 64 * 1024, "public_readback_oversized", 503);
+  demand(response.body, "public_readback_transport_unavailable", 503);
+  const reader = response.body.getReader(), chunks = []; let size = 0;
+  const abort = () => { void reader.cancel().catch(() => {}); };
+  signal.addEventListener("abort", abort, { once: true });
+  try {
+    while (true) {
+      demand(!signal.aborted, "public_readback_transport_unavailable", 503);
+      const part = await reader.read();
+      demand(!signal.aborted, "public_readback_transport_unavailable", 503);
+      if (part.done) break;
+      size += part.value.byteLength;
+      demand(size <= MAX_BODY, "public_readback_oversized", 503);
+      chunks.push(part.value);
+    }
+  } catch (error) {
+    if (error instanceof ReleaseRefusal) throw error;
+    throw new ReleaseRefusal("public_readback_transport_unavailable", 503);
+  } finally { signal.removeEventListener("abort", abort); void reader.cancel().catch(() => {}); }
+  const raw = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
   return strictBody(raw);
 }
 export async function publicReleaseReadback(subject) {
@@ -204,12 +230,22 @@ export async function publicReleaseReadback(subject) {
     prerelease: release.prerelease, publishedAt: canonicalGitHubPublishedAt(release.published_at),
   };
 }
-export async function verifiedReceipt({ request, completion, env }) {
-  validateCompletion(completion, request, env);
+export async function verifiedReceipt({ request, completion, env, recoveryObservation = null }) {
+  // The optional historical capability is private to the recovery entrypoint.
+  // Its signed, fresh observation is validated again after the independent GET.
+  if (recoveryObservation) {
+    const { validateReadbackObservation } = await import("./readback-recovery.mjs");
+    validateReadbackObservation(recoveryObservation, request, completion, env);
+  }
+  validateCompletion(completion, request, env, { historical: !!recoveryObservation });
   // Independent read-only GitHub API with NO OAuth publisher credential.
   const now = await publicReleaseReadback(request.subject);
   validateReleaseObservation(now, request.subject, true);
   demand(stableJson(now) === stableJson(completion.after), "provider_observation_changed");
+  if (recoveryObservation) {
+    const { validateReadbackObservation } = await import("./readback-recovery.mjs");
+    validateReadbackObservation(recoveryObservation, request, completion, env);
+  }
   const payload = releasePayload({
     request, before: completion.before, after: completion.after,
     attemptedAt: completion.attemptedAt, verifiedAt: completion.verifiedAt,

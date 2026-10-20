@@ -1,4 +1,5 @@
 import { recoveryPolicy, validateRecoveryGrant, validateRecordedRecoveryGrant } from "./recovery.mjs";
+import { observeReadbackRecovery, signReadbackRecovery, readbackFailure } from "./readback-recovery.mjs";
 import { digest, stableJson } from "../../../dist/hash.js";
 import { validateReleaseObservation } from "../../../dist/release-v1-contract.js";
 import { authenticate, githubToken, demand, ReleaseRefusal, PublicReadbackRefusal } from "./identity.mjs";
@@ -46,7 +47,8 @@ export async function handle(request, env, auth = authenticate) {
       return reply({ service: "agentproof-release-canary", role: env.ROLE,
         enabled: env.ENABLED === "true", custody: "cloudflare-encrypted-worker-secret",
         sourceCommit: env.TRUSTED_SOURCE_SHA, trustedWorkflowCommit: env.TRUSTED_SOURCE_SHA,
-        serviceSourceCommit: env.SERVICE_SOURCE_SHA ?? null, recoveryRequired: env.RECOVERY_REQUIRED === "true", targetConfigured: !!env.TARGET_SUBJECT_JSON });
+        serviceSourceCommit: env.SERVICE_SOURCE_SHA ?? null, recoveryRequired: env.RECOVERY_REQUIRED === "true",
+        readbackRecoveryEnabled: env.READBACK_RECOVERY_ENABLED === "true", targetConfigured: !!env.TARGET_SUBJECT_JSON });
     }
     demand(env.ROLE === "approval" || env.ROLE === "signing", "role_invalid", 503);
     const paths = env.ROLE === "approval" ?
@@ -205,6 +207,10 @@ export class ReleaseFence {
   }
   async fetch(request) {
     try {
+      if (new URL(request.url).pathname === "/internal/readback-recovery-observe") {
+        try { return reply(await observeReadbackRecovery(this.storage, this.env, await request.json())); }
+        catch (error) { const refused = readbackFailure(error); return reply(refused, refused.status); }
+      }
       const { body, claims, token } = await request.json();
       const path = new URL(request.url).pathname;
       if (path === "/v1/prepare") return reply(await this.prepare(body.seed, claims, token));
@@ -220,17 +226,24 @@ export class ReleaseReceiptLedger {
   constructor(ctx, env) { this.ctx = ctx; this.env = env; this.storage = ctx.storage; }
   async fetch(request) {
     try {
+      if (new URL(request.url).pathname === "/internal/readback-recovery-sign") {
+        try { return reply(await signReadbackRecovery(this.storage, this.env, await request.json())); }
+        catch (error) { const refused = readbackFailure(error); return reply(refused, refused.status); }
+      }
       const { body, claims, token } = await request.json();
       demand(new URL(request.url).pathname === "/v1/sign", "route_not_found", 404);
       const { request: signedRequest, completion } = body;
       validateSignedRequest(signedRequest, claims, this.env, { historical: true });
-      validateCompletion(completion, signedRequest, this.env);
+      validateCompletion(completion, signedRequest, this.env, { historical: true });
       const semantic = digest({ requestDigest: digest(signedRequest), completion: digest(completion) });
       const existing = this.storage.kv.get("receipt");
       if (existing) {
         demand(existing.semantic === semantic, "receipt_target_already_bound", 409);
         return reply({ state: "signed", receipt: existing.receipt });
       }
+      // Historical evidence can retrieve the same receipt. First issuance on
+      // the public path retains its original ten-minute execution policy.
+      validateCompletion(completion, signedRequest, this.env);
       // Independent signer performs an extra fresh GitHub read and never signs
       // a mere caller assertion that the release is published.
       const receipt = await verifiedReceipt({
