@@ -3,3 +3,6 @@ dist/
 *.tgz
 *.sqlite
 *.sqlite-*
+
+# Sanitised hosted CI receipts are build output, not source.
+ci-report/
