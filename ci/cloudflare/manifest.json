@@ -1,0 +1,191 @@
+{
+  "schema": "proofstate.cloudflare-ci-manifest.v1",
+  "repository": {
+    "name": "AyobamiH/agentproof",
+    "id": "1317413810"
+  },
+  "project": "proof-state-ci-agentproof",
+  "basePolicy": {
+    "pullRequest": "github-open-pull-request-main-ancestor",
+    "main": "git-first-parent-public-github-corroborated-single-commit-delta"
+  },
+  "preflightTests": [
+    "ci/cloudflare/run.test.mjs"
+  ],
+  "jobs": [
+    {
+      "id": "validate-linux-node22",
+      "node": "22.23.3",
+      "platform": "linux",
+      "commands": [
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "ci"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "run",
+            "check"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "pack",
+            "--ignore-scripts",
+            "--pack-destination",
+            "{ARTIFACT_DIR}"
+          ]
+        },
+        {
+          "tool": "node",
+          "cwd": ".",
+          "argv": [
+            "scripts/acceptance.mjs",
+            "--candidate-tarball",
+            "{ARTIFACT_DIR}/oneclicksystems-agentproof-0.1.0-rc.6.tgz",
+            "--source-commit",
+            "{SOURCE_SHA}",
+            "--output",
+            "{ARTIFACT_DIR}/acceptance.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "validate-linux-node24",
+      "node": "24.22.0",
+      "platform": "linux",
+      "commands": [
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "ci"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "run",
+            "check"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "pack",
+            "--ignore-scripts",
+            "--pack-destination",
+            "{ARTIFACT_DIR}"
+          ]
+        },
+        {
+          "tool": "node",
+          "cwd": ".",
+          "argv": [
+            "scripts/acceptance.mjs",
+            "--candidate-tarball",
+            "{ARTIFACT_DIR}/oneclicksystems-agentproof-0.1.0-rc.6.tgz",
+            "--source-commit",
+            "{SOURCE_SHA}",
+            "--output",
+            "{ARTIFACT_DIR}/acceptance.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "provider",
+      "node": "24.22.0",
+      "platform": "linux",
+      "commands": [
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "ci"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": "services/production-provider",
+          "argv": [
+            "ci",
+            "--ignore-scripts"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": "services/production-provider",
+          "argv": [
+            "run",
+            "check"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release-provider",
+      "node": "24.22.0",
+      "platform": "linux",
+      "commands": [
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "ci"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": ".",
+          "argv": [
+            "run",
+            "build"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": "services/release-provider",
+          "argv": [
+            "ci",
+            "--ignore-scripts"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": "services/release-provider",
+          "argv": [
+            "run",
+            "check"
+          ]
+        },
+        {
+          "tool": "npm",
+          "cwd": "services/release-provider",
+          "argv": [
+            "audit",
+            "--audit-level=high"
+          ]
+        }
+      ]
+    }
+  ],
+  "excludedCoverage": [
+    {
+      "id": "validate-macos-node24",
+      "platform": "macos",
+      "requiredSeparately": true,
+      "reason": "Cloudflare Pages provides Linux, not macOS."
+    }
+  ]
+}

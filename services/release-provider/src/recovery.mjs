@@ -13,6 +13,10 @@ export function recoveryPolicy(env) {
   return {fingerprint:pin,runId:env.RECOVERY_RUN_ID};
 }
 export function validateRecoveryGrant(grant,record,claims,env,now=Date.now()) {
+  return validateGrantBinding(grant,record,{githubRunId:claims.run_id,
+    githubRunAttempt:Number(claims.run_attempt)},env,now);
+}
+function validateGrantBinding(grant,record,binding,env,now) {
   const configured=recoveryPolicy(env);
   demand(configured && stableJson(configured)===stableJson(record.recoveryPolicy), 'recovery_policy_changed');
   exactKeys(grant,['schema','runId','transactionId','subjectDigest','githubRunId','githubRunAttempt',
@@ -20,7 +24,7 @@ export function validateRecoveryGrant(grant,record,claims,env,now=Date.now()) {
     'publicKeyPem','signatureBase64'],'recovery_grant_shape');
   demand(grant.schema==='donestate.release-recovery-authorisation.v1' && grant.runId===configured.runId &&
     grant.transactionId===record.seed.transactionId && grant.subjectDigest===digest(record.seed.subject) &&
-    grant.githubRunId===claims.run_id && grant.githubRunAttempt===Number(claims.run_attempt) &&
+    grant.githubRunId===binding.githubRunId && grant.githubRunAttempt===binding.githubRunAttempt &&
     grant.workflowCommit===env.TRUSTED_SOURCE_SHA && grant.reservationDigest===digest(record.reservation) &&
     /^[a-f0-9]{64}$/.test(grant.authorisationAuditDigest), 'recovery_grant_binding');
   const issued=releaseTime(grant.issuedAt),expires=releaseTime(grant.expiresAt);
@@ -34,6 +38,18 @@ export function validateRecoveryGrant(grant,record,claims,env,now=Date.now()) {
     Buffer.from(signatureBase64,'base64').toString('base64')===signatureBase64 &&
     verify(null,Buffer.from('donestate.release-recovery-authorisation.v1\0'+stableJson(unsigned)),key,
       Buffer.from(signatureBase64,'base64')), 'recovery_grant_signature');
+}
+
+// A private readback capability validates already-persisted authority. These
+// are recorded identities, never a fabricated or refreshed workload token.
+export function validatePersistedRecoveryAuthority(record,env) {
+  const grant=record?.recoveryAuthorisation, reservation=record?.reservation;
+  demand(grant && reservation && record.recoveryPolicy, 'recovery_authorisation_required');
+  validateGrantBinding(grant,record,{githubRunId:reservation.githubRunId,
+    githubRunAttempt:reservation.githubRunAttempt},env,releaseTime(grant.issuedAt));
+  demand(releaseTime(record.attemptedAt)>=releaseTime(grant.issuedAt) &&
+    releaseTime(record.attemptedAt)<releaseTime(grant.expiresAt), 'recovery_attempt_outside_authority');
+  return grant;
 }
 
 // A later authenticated attempt may inspect the original effect, never spend
