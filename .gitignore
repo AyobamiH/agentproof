@@ -3,3 +3,6 @@ dist/
 *.tgz
 *.sqlite
 *.sqlite-*
+
+# Generated static CI evidence, never source.
+ci-report/
