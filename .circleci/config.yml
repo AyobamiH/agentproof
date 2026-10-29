@@ -1,0 +1,59 @@
+version: 2.1
+
+jobs:
+  genuine-macos-node24:
+    macos:
+      xcode: "26.4.1"
+    resource_class: m4pro.medium
+    working_directory: ~/agentproof
+    environment:
+      CI: "true"
+    steps:
+      - checkout
+      - run:
+          name: Verify genuine macOS and exact commit
+          command: |
+            set -euo pipefail
+            test "$(uname -s)" = "Darwin"
+            test "$(uname -m)" = "arm64"
+            test "$(git rev-parse HEAD)" = "$CIRCLE_SHA1"
+            sw_vers
+      - run:
+          name: Install checksum-verified Node.js 24 without paid services
+          command: |
+            set -euo pipefail
+            NODE_VERSION=v24.22.2
+            ARCHIVE="node-${NODE_VERSION}-darwin-arm64.tar.gz"
+            BASE="https://nodejs.org/dist/${NODE_VERSION}"
+            curl --fail --silent --show-error --location "$BASE/SHASUMS256.txt" -o /tmp/node-SHASUMS256.txt
+            curl --fail --silent --show-error --location "$BASE/$ARCHIVE" -o "/tmp/$ARCHIVE"
+            grep "  $ARCHIVE$" /tmp/node-SHASUMS256.txt | (cd /tmp && shasum -a 256 -c -)
+            mkdir -p "$HOME/.local/node24"
+            tar -xzf "/tmp/$ARCHIVE" -C "$HOME/.local/node24" --strip-components=1
+            echo 'export PATH="$HOME/.local/node24/bin:$PATH"' >> "$BASH_ENV"
+            "$HOME/.local/node24/bin/node" --version
+      - run:
+          name: Reproduce AgentProof macOS validation and installed-package acceptance
+          no_output_timeout: 10m
+          command: |
+            set -euo pipefail
+            export PATH="$HOME/.local/node24/bin:$PATH"
+            node -e 'if(process.platform!=="darwin"||process.arch!=="arm64"||process.versions.node.split(".")[0]!=="24")process.exit(1)'
+            npm ci --no-audit --no-fund
+            npm run check
+            TMP_CANDIDATE="$(mktemp -d)"
+            trap 'rm -rf "$TMP_CANDIDATE"' EXIT
+            npm pack --ignore-scripts --pack-destination "$TMP_CANDIDATE"
+            node scripts/acceptance.mjs \
+              --candidate-tarball "$TMP_CANDIDATE/oneclicksystems-agentproof-0.1.0-rc.6.tgz" \
+              --source-commit "$CIRCLE_SHA1" \
+              --output "$TMP_CANDIDATE/agentproof-acceptance.json"
+            node -e 'const r=require(process.argv[1]); console.log(JSON.stringify({platform:process.platform,arch:process.arch,commit:process.env.CIRCLE_SHA1,acceptance:r.status??r.result??"report-written"}))' "$TMP_CANDIDATE/agentproof-acceptance.json"
+
+workflows:
+  macos-trusted-canary:
+    jobs:
+      # Run for all branch heads, including pull requests and main.
+      # No secrets, deployments, cache or artifact uploads.
+      # CircleCI Free stops jobs when included credits run out.
+      - genuine-macos-node24
