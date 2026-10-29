@@ -53,7 +53,7 @@ jobs:
 workflows:
   macos-trusted-canary:
     jobs:
-      - genuine-macos-node24:
-          # Run for all branch heads, including pull requests and main.
-          # No secrets, deployments, cache or artifact uploads.
-          # The CircleCI Free plan blocks jobs when credits run out.
+      # Run for all branch heads, including pull requests and main.
+      # No secrets, deployments, cache or artifact uploads.
+      # CircleCI Free stops jobs when included credits run out.
+      - genuine-macos-node24
