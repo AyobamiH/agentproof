@@ -17,3 +17,10 @@ under the 30000 Free monthly credits previously observed for this organisation.
 Evidence: /tmp/gaia-macos15-evidence uploaded as CircleCI artifacts. A green
 CircleCI job demonstrates the actual frozen ARM64 binary and smoke test on
 macOS 15, not the upstream GitHub Actions workflow or a release.
+
+## Second verification: required email release build
+
+After CircleCI flagship pipeline #5/job #4 passed, the same isolated branch is
+updated to run only the second required macOS ARM64 release binary,
+using the upstream email-agent dependency/install/import/freeze/smoke scripts.
+The first proof remains immutable at harness commit 65e4803 and Circle job #4.

@@ -2,7 +2,7 @@ version: 2.1
 
 # Isolated proof on the already-connected CircleCI public repository.
 jobs:
-  gaia-macos15-arm64-freeze:
+  gaia-email-macos15-arm64-freeze:
     macos:
       xcode: "16.4.0"
     resource_class: m4pro.medium
@@ -22,21 +22,21 @@ jobs:
             test "$(uname -m)" = "arm64"
             sw_vers -productVersion | grep -E '^15\.'
             test ! -d .github/workflows
-            test -s scripts/gaia-freeze.sh
+            test -s scripts/email-freeze.sh
             echo "CircleCI genuine Darwin/arm64/macOS15 executor confirmed"
       - run:
-          name: Freeze exact GAIA PR head and smoke-test native ARM64 binary
+          name: Freeze exact GAIA email-agent ARM64 binary and smoke-test it
           no_output_timeout: 15m
           command: |
             set -euo pipefail
-            python3 scripts/run_with_deadline.py 2100 scripts/gaia-freeze.sh
+            python3 scripts/run_with_deadline.py 2100 scripts/email-freeze.sh
       - store_artifacts:
-          path: /tmp/gaia-macos15-evidence
+          path: /tmp/gaia-email-macos15-evidence
 
 workflows:
   one-shot-gaia-macos15-evidence:
     jobs:
-      - gaia-macos15-arm64-freeze:
+      - gaia-email-macos15-arm64-freeze:
           filters:
             branches:
               only: ci/gaia-macos15-arm64-freeze-6172-20261030
