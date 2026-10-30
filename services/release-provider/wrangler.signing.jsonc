@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "agentproof-release-sign",
   "account_id": "6ddcbcb8474f1a7e460b2f0aabec0e2f",
-  "main": "src/worker.mjs",
+  "main": "src/entrypoints.mjs",
   "compatibility_date": "2026-10-17",
   "compatibility_flags": [
     "nodejs_compat"
@@ -38,7 +38,13 @@
     "RECOVERY_REQUIRED": "true",
     "RECOVERY_RUN_ID": "",
     "RECOVERY_HANDOFF_FINGERPRINT": "",
-    "RECOVERY_HANDOFF_PUBLIC_KEY_PEM": ""
+    "RECOVERY_HANDOFF_PUBLIC_KEY_PEM": "",
+    "READBACK_RECOVERY_ENABLED": "false",
+    "READBACK_RECOVERY_RUN_ID": "",
+    "READBACK_RECOVERY_TRANSACTION_ID": "",
+    "READBACK_RECOVERY_GITHUB_RUN_ID": "",
+    "READBACK_RECOVERY_COMPLETION_DIGEST": "",
+    "READBACK_RECOVERY_AUTHORISATION_DIGEST": ""
   },
   "observability": {
     "enabled": false
