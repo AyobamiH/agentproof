@@ -163,3 +163,7 @@ policy are unchanged. The independently verified repository-patch run
 [39121692291](https://github.com/AyobamiH/agentproof/actions/runs/39121692291)
 remains evidence for `d89f6d54709830ff49373ab7c2797c927ced8ac9`.
 RC6 npm publication is unchanged; independent-installation credit remains zero.
+
+## Owner-authorised native CI migration — 21 October 2026
+
+See [native CI provider policy](NATIVE-CI-PROVIDER.md) and `governance/native-ci-provider-policy.json` for the current source policy. Historical GitHub Actions enforcement receipts remain dated evidence, not proof of current provider settings. Source, hosted tests, external required-check activation, merge, macOS coverage and production release are recorded separately. This source change does not claim any provider mutation or production deployment.

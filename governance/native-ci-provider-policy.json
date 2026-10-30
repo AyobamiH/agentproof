@@ -1,0 +1,107 @@
+{
+  "schema": "proofstate.native-ci-provider-policy.v1",
+  "repository": "AyobamiH/agentproof",
+  "repositoryId": 1317413810,
+  "rulesetId": 25292351,
+  "owner": {
+    "login": "AyobamiH",
+    "userId": 47716486,
+    "authorisedOn": "2026-10-21",
+    "rationale": "Owner instructed completion of the proven native Cloudflare Linux CI migration without paid Actions, removed protections or unrelated recovery deployment."
+  },
+  "provider": {
+    "context": "Cloudflare Pages",
+    "appId": 85455,
+    "appSlug": "cloudflare-workers-and-pages",
+    "project": "proof-state-ci-agentproof"
+  },
+  "pipeline": {
+    "acceptedSource": "1f9053b7748a9edb6b5ff4e436f39c355dfe60f2",
+    "manifestSha256": "76e7a88b63da4dc14e0e53891f053cdce0a781411ea4dd53eaa6ab2f5494ba98",
+    "runnerSha256": "0d343d155136c4827d47bdd6d7c2b8499c31cb3e9cf60f46726fd4cdb79a9e54"
+  },
+  "requiredChecks": [
+    {
+      "context": "Cloudflare Pages",
+      "integration_id": 85455
+    },
+    {
+      "context": "validate (macos-latest, 24)",
+      "integration_id": 15368
+    }
+  ],
+  "requiresSeparateMacOS": true,
+  "desiredRuleset": {
+    "id": 25292351,
+    "name": "AgentProof required CI and PR review flow",
+    "target": "branch",
+    "enforcement": "active",
+    "bypass_actors": [],
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "~DEFAULT_BRANCH"
+        ]
+      }
+    },
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      },
+      {
+        "type": "pull_request",
+        "parameters": {
+          "required_approving_review_count": 0,
+          "dismiss_stale_reviews_on_push": false,
+          "required_reviewers": [],
+          "require_code_owner_review": false,
+          "require_last_push_approval": false,
+          "required_review_thread_resolution": true,
+          "require_extra_approval_for_unattributed_changes": true,
+          "allowed_merge_methods": [
+            "merge",
+            "squash",
+            "rebase"
+          ]
+        }
+      },
+      {
+        "type": "required_status_checks",
+        "parameters": {
+          "strict_required_status_checks_policy": true,
+          "do_not_enforce_on_create": false,
+          "required_status_checks": [
+            {
+              "context": "Cloudflare Pages",
+              "integration_id": 85455
+            },
+            {
+              "context": "validate (macos-latest, 24)",
+              "integration_id": 15368
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "activation": {
+    "requireExactHeadHostedReceipt": true,
+    "requireNativeAppCheck": true,
+    "enableAllPreviewBranches": false,
+    "previewScope": [
+      "ci/native-pages-provider-20261021"
+    ],
+    "enableMainOnlyAfterMainHostedAcceptance": true
+  },
+  "cost": {
+    "allowPlanUpgrade": false,
+    "allowPaidActions": false,
+    "allowFunctions": false,
+    "allowProductionApplicationDeploy": false
+  },
+  "stateMeaning": "Source policy only; provider state and merge outcome require separate API evidence. Historical 4 September provider observations are retained unchanged."
+}
