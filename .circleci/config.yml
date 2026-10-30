@@ -1,0 +1,42 @@
+version: 2.1
+
+# Isolated proof on the already-connected CircleCI public repository.
+jobs:
+  gaia-macos15-arm64-freeze:
+    macos:
+      xcode: "16.4.0"
+    resource_class: m4pro.medium
+    working_directory: ~/macos15-proof
+    environment:
+      GAIA_EXPECTED_SHA: "4808ed81903ab226ea71a2d030b9dfdbba436a58"
+      GAIA_REF: "fix/macos-15-arm64-runners-6169"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - checkout
+      - run:
+          name: Verify genuine macOS 15 arm64 executor and pinned harness
+          command: |
+            set -euo pipefail
+            test "$(git rev-parse HEAD)" = "$CIRCLE_SHA1"
+            test "$(uname -s)" = "Darwin"
+            test "$(uname -m)" = "arm64"
+            sw_vers -productVersion | grep -E '^15\.'
+            test ! -d .github/workflows
+            test -s scripts/gaia-freeze.sh
+            echo "CircleCI genuine Darwin/arm64/macOS15 executor confirmed"
+      - run:
+          name: Freeze exact GAIA PR head and smoke-test native ARM64 binary
+          no_output_timeout: 15m
+          command: |
+            set -euo pipefail
+            python3 scripts/run_with_deadline.py 2100 scripts/gaia-freeze.sh
+      - store_artifacts:
+          path: /tmp/gaia-macos15-evidence
+
+workflows:
+  one-shot-gaia-macos15-evidence:
+    jobs:
+      - gaia-macos15-arm64-freeze:
+          filters:
+            branches:
+              only: ci/gaia-macos15-arm64-freeze-6172-20261030
