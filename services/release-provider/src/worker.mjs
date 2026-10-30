@@ -1,7 +1,7 @@
 import { recoveryPolicy, validateRecoveryGrant, validateRecordedRecoveryGrant } from "./recovery.mjs";
 import { digest, stableJson } from "../../../dist/hash.js";
 import { validateReleaseObservation } from "../../../dist/release-v1-contract.js";
-import { authenticate, githubToken, demand, ReleaseRefusal } from "./identity.mjs";
+import { authenticate, githubToken, demand, ReleaseRefusal, PublicReadbackRefusal } from "./identity.mjs";
 import { strictBody, readTarget, privateKey, provider, validateSeed,
   decision, validateSignedRequest, signCompletion, validateCompletion,
   verifiedReceipt, targetScope, policy, reservationEvidence } from "./policy.mjs";
@@ -13,6 +13,8 @@ function reply(payload, status = 200) {
   });
 }
 function failure(error) {
+  if (error instanceof PublicReadbackRefusal)
+    return reply({ error: error.code, readback: error.readback }, error.status);
   if (error instanceof ReleaseRefusal) return reply({ error: error.code }, error.status);
   if (error instanceof Error && error.message.startsWith("release_v1:")) {
     return reply({ error: "release_policy_rejected" }, 403);

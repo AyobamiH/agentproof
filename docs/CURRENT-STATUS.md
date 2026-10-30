@@ -163,3 +163,21 @@ policy are unchanged. The independently verified repository-patch run
 [39121692291](https://github.com/AyobamiH/agentproof/actions/runs/39121692291)
 remains evidence for `d89f6d54709830ff49373ab7c2797c927ced8ac9`.
 RC6 npm publication is unchanged; independent-installation credit remains zero.
+
+
+## Published consequence; independent receipt pending — 18 October 2026
+
+The current-main repository-patch canary [39124046639](https://github.com/AyobamiH/agentproof/actions/runs/39124046639)
+passed all 17 checks at `74c12b4e42c8109d34e4764fa0e4864513cab4a9`.
+Protected release run [39124373253](https://github.com/AyobamiH/agentproof-release-canary/actions/runs/39124373253)
+then published the existing disposable release `416342082` once at `2026-10-18T11:43:37Z`.
+The exact successful GitHub response and signed execution completion are retained.
+Attempts 2 and 3 made zero publication requests and returned the identical completion.
+
+The separate receipt signer refused its public GitHub readback on all three attempts.
+No AgentProof receipt, independent OpsTruth verdict, or DoneState VERIFIED outcome is
+claimed. This change adds only bounded endpoint/status/rate-limit metadata to that
+refusal. Upstream bodies, URLs, arbitrary headers and credentials are never returned.
+The permanent fence, keys, original workflow identity and historical evidence remain
+unchanged. Further recovery must diagnose the upstream refusal and may only observe
+and sign the existing consequence; it must never publish again.

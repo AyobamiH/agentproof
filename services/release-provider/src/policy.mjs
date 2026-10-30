@@ -6,7 +6,7 @@ import { GitHubReleaseV1Provider, canonicalGitHubPublishedAt } from "../../../di
 import { validateReleaseSubject, validateReleaseObservation, validateReleaseRequest,
   validateReleaseApproval, exactKeys, releaseAssert } from "../../../dist/release-v1-contract.js";
 import { releasePayload, signReleaseReceiptV2 } from "../../../dist/release-v1-receipt.js";
-import { demand, ReleaseRefusal } from "./identity.mjs";
+import { demand, ReleaseRefusal, PublicReadbackRefusal } from "./identity.mjs";
 import { recoveryPolicy } from "./recovery.mjs";
 
 export const AUTHORITY_ISSUER = "agentproof.release-canary.authority.v1";
@@ -165,26 +165,29 @@ export function releaseSigner(env) {
     signCanonical: async input => sign(null, Buffer.from(input), key),
   };
 }
-async function anonymousGitHubJson(path) {
+async function anonymousGitHubJson(path, endpoint) {
   const response = await fetch("https://api.github.com/repos/AyobamiH/agentproof-release-canary" + path, {
     method: "GET", redirect: "manual", cache: "no-store",
     headers: { accept: "application/vnd.github+json", "user-agent": "agentproof-separate-release-signer/1.0" },
     signal: AbortSignal.timeout(12_000),
   });
-  demand(response.ok && response.status === 200, "public_readback_unavailable", 503);
+  if (!response.ok || response.status !== 200) {
+    await response.body?.cancel().catch(() => {});
+    throw new PublicReadbackRefusal(endpoint, response);
+  }
   const raw = await response.text();
   demand(Buffer.byteLength(raw) <= 64 * 1024, "public_readback_oversized", 503);
   return strictBody(raw);
 }
 export async function publicReleaseReadback(subject) {
-  const repo = await anonymousGitHubJson("");
+  const repo = await anonymousGitHubJson("", "repository");
   demand(repo.id === subject.repositoryId && repo.owner?.id === subject.ownerId &&
     repo.name === subject.repository && repo.owner.login === subject.owner &&
     repo.private === false, "public_repo_identity_mismatch", 403);
-  const tag = await anonymousGitHubJson("/git/ref/tags/" + subject.tagName);
+  const tag = await anonymousGitHubJson("/git/ref/tags/" + subject.tagName, "tag");
   demand(tag.ref === "refs/tags/" + subject.tagName && tag.object?.type === "commit" &&
     tag.object.sha === subject.tagCommit, "public_tag_identity_mismatch", 403);
-  const release = await anonymousGitHubJson("/releases/" + subject.releaseId);
+  const release = await anonymousGitHubJson("/releases/" + subject.releaseId, "release");
   demand(release.id === subject.releaseId && release.tag_name === subject.tagName &&
     Array.isArray(release.assets) && release.assets.length === 2, "public_release_identity_mismatch", 403);
   const pkg = release.assets.find(a => a.id === subject.packageAssetId),
