@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "agentproof.release.v1 / fixture-only outcome-uncertainty reproduction",
+  "purpose": "Re-execute existing reviewed unit-test scenarios; NOT a live GitHub provider experiment.",
+  "sourceBaselineCommit": "d599bf512613cfa71a8ed95cc718937d63b5080a",
+  "subject": "ExampleOwner/disposable-release-canary; ephemeral Ed25519 fixture keys",
+  "permittedConsequence": "local temporary fixture files and local ephemeral signatures only",
+  "externalProviderCallsBySelectedCases": "none by design; code-pinned fixtures, not an OS network sandbox",
+  "productionOrExternalOutcomeVerified": false,
+  "result": "BLOCKED",
+  "reason": "SOURCE_DRIFT: src/test/release-v1.test.ts differs from audited baseline; inspect changes before any reproduction."
+}

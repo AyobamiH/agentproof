@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-01",
+  "identity": "owner-operated source and fixture verification, not independent external acceptance",
+  "baselineSourceCommit": "d599bf512613cfa71a8ed95cc718937d63b5080a",
+  "focusCases": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "sourceHashes": {
+      "src/test/release-v1.test.ts": "3b4350c64b46767e9f390286b228b4e6c0048e7042e9a5ac83e986675c1dd819",
+      "src/release-v1-controller.ts": "69d4f8446d0a0ec5ffb23ee10d51bfa5a6dadc9b91e76811318d71be391e5d37",
+      "dist/test/release-v1.test.js": "04de681b4062cdab2690bbfec2e9a8c8baacbcb9b695ea898681eac0fcd9c20e"
+    },
+    "reportSHA256": "eca321196adcf4ece46036894b6beca9168f5456c7c90da462ab700c4a0d1aed"
+  },
+  "negativeControl": {
+    "state": "BLOCKED",
+    "reason": "SOURCE_DRIFT: src/test/release-v1.test.ts differs from audited baseline; inspect changes before any reproduction.",
+    "reportSHA256": "7a2c003e96ef50d3f2817d602cd73d1fb90517e2740e2580d7880a5175af6bf5"
+  },
+  "firstFullRun": {
+    "status": "FAILED_HOST_CONFIGURATION",
+    "reason": "Global Git fixture commit signing inherited encrypted SSH signing key; askpass not available. The initial failure was preserved, not converted to success."
+  },
+  "secondFullRun": {
+    "status": "PASSED",
+    "command": "env GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false npm run check",
+    "testGroups": [
+      {
+        "tests": 76,
+        "passes": 76,
+        "failed": 0
+      },
+      {
+        "tests": 22,
+        "passes": 22,
+        "failed": 0
+      }
+    ],
+    "documentationClosure": "ok",
+    "packageAudit": "npm pack --dry-run completed"
+  },
+  "globalSigningConfigChanged": false,
+  "productionSideEffect": false,
+  "externalAdoptionCredit": 0,
+  "hostedPRChecks": "not checked in this receipt"
+}

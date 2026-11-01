@@ -207,6 +207,10 @@ Five roles remain distinct: proposer, approval authority, executor, receipt sign
 
 The included development authority is for local testing only. Its approvals are marked `development` and fail closed for transactions requiring production authority. RC6 does not provide a production KMS/HSM signer, OS sandbox, hosted authority, or service activation.
 
+## Reproduce the lost-acknowledgement boundary (research only)
+
+The [eight-case, credential-free release-uncertainty reproduction](docs/research/repro-outcome-uncertainty/README.md) reuses the existing source-only `agentproof.release.v1` fixture tests. It demonstrates one-attempt safety, honest unknown states, exact-source pinning and the difference between a signed statement and an independently verified external effect. Read the [standards-first comparison](docs/research/repro-outcome-uncertainty/standards-comparison.md) and [unresolved acceptance gates](docs/research/repro-outcome-uncertainty/acceptance-and-open-questions.md) before treating this research as a product claim. No live release is re-published.
+
 ## Licence
 
 AgentProof and the files distributed in this package are licensed under the Apache License 2.0. This package-scoped licence does not change the licensing of unrelated directories in the parent OpenClaw Operator repository.

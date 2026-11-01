@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "name": "agentproof.release.v1 / fixture-only outcome-uncertainty reproduction",
+  "purpose": "Re-execute existing reviewed unit-test scenarios; NOT a live GitHub provider experiment.",
+  "sourceBaselineCommit": "d599bf512613cfa71a8ed95cc718937d63b5080a",
+  "subject": "ExampleOwner/disposable-release-canary; ephemeral Ed25519 fixture keys",
+  "permittedConsequence": "local temporary fixture files and local ephemeral signatures only",
+  "externalProviderCallsBySelectedCases": "none by design; code-pinned fixtures, not an OS network sandbox",
+  "productionOrExternalOutcomeVerified": false,
+  "result": "PASS",
+  "observedAt": "2026-11-01T11:25:02.308Z",
+  "nodeVersion": "v24.18.0",
+  "sourceHashes": {
+    "src/test/release-v1.test.ts": "3b4350c64b46767e9f390286b228b4e6c0048e7042e9a5ac83e986675c1dd819",
+    "src/release-v1-controller.ts": "69d4f8446d0a0ec5ffb23ee10d51bfa5a6dadc9b91e76811318d71be391e5d37",
+    "dist/test/release-v1.test.js": "04de681b4062cdab2690bbfec2e9a8c8baacbcb9b695ea898681eac0fcd9c20e"
+  },
+  "tapSha256": "cc4623ef18e40151d94324e95a48a8e128d0ea52daafd24b63ea6d66b575a0fb",
+  "testProcessExitCode": 0,
+  "testProcessError": null,
+  "tests": 8,
+  "pass": 8,
+  "fail": 0,
+  "skipped": 0,
+  "cancelled": 0,
+  "todo": 0,
+  "cases": [
+    {
+      "name": "exact authorised release, one mutation, durable retry and independently signed V2 evidence",
+      "expectation": "one simulated publication; trusted signature; independentOutcomeVerified=false",
+      "observedInRun": true
+    },
+    {
+      "name": "lost successful publication response reconciles by readback without re-publication",
+      "expectation": "lost acknowledgement settles from fixture readback; mutation count remains one",
+      "observedInRun": true
+    },
+    {
+      "name": "unavailable post-effect readback never retries the effect",
+      "expectation": "unknown first result is reconciled without another simulated publication",
+      "observedInRun": true
+    },
+    {
+      "name": "signer outage after verified effect recovers by signing alone",
+      "expectation": "signer-only recovery; simulated publication count remains one",
+      "observedInRun": true
+    },
+    {
+      "name": "wrong preconditions, altered authority or expired grant fail before publication",
+      "expectation": "denied, expired and altered preconditions cause no simulated publication",
+      "observedInRun": true
+    },
+    {
+      "name": "ambiguous unsuccessful PATCH is never invoked twice on restart",
+      "expectation": "unobserved effect remains ambiguous and is not automatically replayed",
+      "observedInRun": true
+    },
+    {
+      "name": "after-effect artifact drift cannot be signed or retried",
+      "expectation": "mismatched digest blocks a receipt and prevents another publication",
+      "observedInRun": true
+    },
+    {
+      "name": "target uniqueness also rejects a fresh nonce on a second transaction",
+      "expectation": "new nonce does not authorise a second publication of the same target",
+      "observedInRun": true
+    }
+  ],
+  "limitations": [
+    "The provider is FixtureReleaseProvider, not GitHub or any production API.",
+    "Temporary approval and receipt keys are generated inside the test.",
+    "independentOutcomeVerified=false is asserted even for a trusted signature.",
+    "These assertions do not establish universal exactly-once semantics, provider availability, real external effects or independent adoption.",
+    "Source hashes guard this frozen fixture, not the operating system or dependencies."
+  ]
+}
