@@ -6,6 +6,12 @@ The `0.1.0-rc.6` prerelease protects one action: `agentproof.repository_patch.v1
 
 Start with [Project direction](docs/PROJECT-DIRECTION.md). Security decisions live in [SECURITY.md](SECURITY.md), the trust roles in [Trust model](docs/TRUST-MODEL.md), and evidence-led priorities in the [Roadmap](docs/ROADMAP.md). The npm prerelease procedure and human 2FA publication boundary are documented in [npm release procedure](docs/NPM-RELEASE.md).
 
+## Evidence-led technical discussion
+
+The [17-check hosted production canary case study](https://aiworkaccountability.com/writing/what-seventeen-production-checks-proved-for-agentproof/) records the exact repository-patch workload, the rejected OIDC identity, successful signed-receipt/compensation checks, and limitations. It does **not** claim general merge/deploy/release authority or independent adoption.
+
+For critical review of when a signed execution record becomes independently observable proof of an external effect, see [Proof & State Discussion #44](https://github.com/AyobamiH/proof-and-state/discussions/44). This is an open request for counterexamples and simpler alternatives, not a decision to combine separate products or expand AgentProof's security scope.
+
 ## Requirements
 
 - Node.js 22.5 or newer
