@@ -1,5 +1,48 @@
 # Isolated AgentProof release authority and signing
 
+## Current recovery contract — 20 October 2026
+
+The disposable release `416342082` was published once on 18 October. Its
+permanent execution fence and signed completion remain the authority for that
+effect. A signer readback refusal then prevented receipt and downstream
+acceptance; the original completion's ten-minute freshness window expired.
+Implementation and live acceptance are separate states, tracked in DoneState's
+[`AGENTPROOF-001` ledger](https://github.com/AyobamiH/donestate/blob/main/governance/project-ledger.json).
+
+The private `ReleaseRecovery` service entrypoint offers `observe` on the
+approval Worker and `sign` on the receipt Worker. These methods recover
+post-publication evidence for an already-verified, exactly pinned predecessor.
+They cannot prepare, activate or execute a publication. The public HTTP routes
+retain GitHub OIDC authentication, and `ENABLED=false` can remain in place while
+`READBACK_RECOVERY_ENABLED=true` enables this separate capability.
+
+Recovery configuration pins the original DoneState run, transaction, GitHub
+run, completion digest and recovery-authorisation digest, alongside the existing
+target, producing workflow and distinct signing keys. The authority checks the
+persisted grant at its original issuance and the attempt within that grant's
+lifetime. It performs fresh public GETs and signs an
+`agentproof.release-readback-attestation.v1` sidecar with a five-minute expiry,
+the original completion digest and an explicit `readOnly: true` claim.
+
+The receipt signer validates that sidecar and repeats its own GETs before first
+signing. It preserves the original approval, attempted/verified timestamps,
+observations and completion signature. Its idempotency identity is still the
+original request plus completion: refreshing the sidecar cannot create a second
+receipt. Historical evidence can retrieve an existing receipt; first issuance
+through the public route retains the original ten-minute policy.
+
+DoneState owns persisted retry stages, leases, alarms, budget and settlement.
+Missing original completion, changed authority or changed release content blocks
+this bounded recovery; it never grants another publication attempt. Pi Durable
+and PiHarness remain deferred under the recorded
+[decision](../../docs/DECISION-LOG.md).
+
+The sections below retain earlier deployment checkpoints. Source presence or a
+passing fixture does not establish live receipt issuance or independent release
+acceptance.
+
+## Historical source checkpoint
+
 Status on 17 October 2026: **source-only, disabled by default, not production accepted**. These services have no authority over the existing AgentProof repository-patch Workers.
 
 ## Isolation and permanent fencing

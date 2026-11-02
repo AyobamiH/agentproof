@@ -3,6 +3,21 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 export class ReleaseRefusal extends Error {
   constructor(code, status = 403) { super(code); this.code = code; this.status = status; }
 }
+// Bounded public transport metadata; never include upstream bodies or credentials.
+export class PublicReadbackRefusal extends ReleaseRefusal {
+  constructor(endpoint, response) {
+    super("public_readback_unavailable", 503);
+    const numberHeader = name => {
+      const value = response.headers.get(name);
+      return typeof value === "string" && /^\d{1,10}$/.test(value) ? Number(value) : null;
+    };
+    if (!["repository", "tag", "release"].includes(endpoint)) throw new Error("readback_endpoint_invalid");
+    this.readback = Object.freeze({ endpoint, upstreamStatus: response.status,
+      rateLimitRemaining: numberHeader("x-ratelimit-remaining"),
+      rateLimitReset: numberHeader("x-ratelimit-reset"),
+      retryAfterSeconds: numberHeader("retry-after") });
+  }
+}
 export function demand(condition, code, status = 403) {
   if (!condition) throw new ReleaseRefusal(code, status);
 }

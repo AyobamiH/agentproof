@@ -1,6 +1,10 @@
-# Release v1 — source-only candidate
+# Release v1 — unpublished package candidate and isolated service acceptance
 
-**Status (17 October 2026): implemented and tested only against disposable/provider fixtures. NOT activated, deployed, published to npm, or authorised as a DoneState consequence.**
+**Current status (20 October 2026): one isolated disposable release was published on 18 October; receipt issuance and independent end-to-end acceptance remain blocked. The public npm RC6 package does not contain this candidate.**
+
+The [preserved checkpoint](https://github.com/AyobamiH/donestate/blob/main/docs/evidence/agentproof-release-publication-checkpoint-20261018.json) records release `416342082`, producing run `39124373253`, identical completion bytes on recovery attempts and closure of temporary activation. The [accepted recovery decision](https://github.com/AyobamiH/donestate/blob/main/docs/adr/002-deterministic-release-recovery.md) adds a separate fresh signed readback sidecar and durable alarms without changing original execution evidence, the Receipt V2 contract, signing roles or publication fence. Local recovery implementation checks passed; protected source review, deployment and new live acceptance remain pending. The accepted intention remains in the [decision checkpoint](https://github.com/AyobamiH/donestate/blob/main/docs/evidence/agentproof-release-recovery-checkpoint-20261020.json).
+
+The contract below distinguishes the package candidate from the separately deployed isolated service. Its original production-gate checklist describes evidence required for acceptance; provisioning and one publication are now historical facts, while the full proof chain remains incomplete.
 
 This narrowly scoped action publishes **one already-existing GitHub draft prerelease** with an exact tag, commit, two existing assets (one package and one provenance document), pinned SHA-256 metadata, immutable numeric owner/repository IDs and `make_latest:false`. It never creates a tag, uploads assets, changes repository source, merges a PR, deploys a Worker, or publishes npm packages. No arbitrary release command or generic OAuth token injection is supported.
 
@@ -21,13 +25,13 @@ One semantic release target is claimed at most once per SQLite state root. The `
 
 Publishing an existing release is not reliably reversible. **No automatic compensation**, deletion, rollback or historical receipt mutation is permitted. If withdrawal is ever needed it must be a new, separately authorised consequential action; immutable GitHub releases may prohibit edits. This candidate is not a distributed exactly-once transaction: another authorised publisher or a different state store could race the preflight and PATCH. Production requires a one-target global lock/fencing service and exclusive scoped publisher credentials before attributing effect ownership.
 
-GitHub asset `digest` fields are provider metadata. The current source-only candidate verifies those digests **as reported by the provider**, not by independently downloading and hashing every release asset. An external OpsTruth read lane must re-observe the released tag, provenance and downloaded artifact bytes and provide its own independently signed decision. AgentProof cannot issue DoneState `VERIFIED`.
+GitHub asset `digest` fields are provider metadata. The package candidate verifies those digests **as reported by the provider**, not by independently downloading and hashing every release asset. An external OpsTruth read lane must re-observe the released tag, provenance and downloaded artifact bytes and provide its own independently signed decision. AgentProof cannot issue DoneState `VERIFIED`.
 
 ## Acceptance and missing production gates
 
-Source checks cover execution, one PATCH, durable replay/nonce/target uniqueness, lost response, signer outage, altered approval, invalid digest/tag, stale state and a fixed-path mocked GitHub REST client. The new schemas are `release-v1-subject`, `release-v1-approval`, and `release-v2-receipt`. They are **candidate** schemas not added to published RC6's public package API or CLI. No live publisher token, new Cloudflare release authority or signer has been configured by this source change.
+Source checks cover execution, one PATCH, durable replay/nonce/target uniqueness, lost response, signer outage, altered approval, invalid digest/tag, stale state and a fixed-path mocked GitHub REST client. The new schemas are `release-v1-subject`, `release-v1-approval`, and `release-v2-receipt`. They are **candidate** schemas not added to published RC6's public package API or CLI. The original source-only change did not configure live authority. Subsequent isolated deployment and publication are recorded in the checkpoint above; they do not establish receipt or independent-verifier acceptance.
 
-Before any live canary or customer use:
+The original acceptance checklist remains below. For the existing published target, resume proof collection only; never repeat preparation/publication steps or create a replacement target to disguise a failed acceptance:
 1. Select one explicitly disposable **real** GitHub release subject and pre-create a sealed draft with exact two assets. Verify the actual owner/repository numeric IDs and real SHA-256 bytes/provenance independently.
 2. Provision a **separate**, release-specific production approval service and Ed25519 receipt signer, keys/trust pins and durable global target fencing. **Never widen** the existing disposable repository-patch Worker policy or reuse its signing keys.
 3. Restrict one GitHub-hosted source-pinned workflow and installation credential to the exact test repo, release and operation; require required CI and test denied/malformed/foreign identities, lost effect response and signer outage.

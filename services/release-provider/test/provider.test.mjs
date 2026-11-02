@@ -332,3 +332,36 @@ test("GitHub redirects cannot reserve a release or satisfy independent signer re
     assert.equal(calls.length,1);
   }
 });
+
+
+test("signer readback refusal reports bounded upstream status without signing or disclosing bodies",async t=>{
+  const api=githubFixture(t),authority=env("approval");
+  const prepared=await call("approval",authority,"/v1/prepare",{seed:seed()});
+  const executed=await call("approval",authority,"/v1/execute",{request:prepared.json.request});
+  const normalFetch=globalThis.fetch;
+  let endpoint="repository",status=403,calls=0;
+  const paths={repository:"/repos/AyobamiH/agentproof-release-canary",tag:"/git/ref/tags/",release:"/releases/"};
+  t.mock.method(globalThis,"fetch",async(input,init)=>{
+    calls++;assert.equal(init.method,"GET");assert.equal(init.redirect,"manual");
+    assert.equal(init.headers.authorization,undefined);
+    const path=new URL(String(input)).pathname;
+    if(endpoint==="repository"?path===paths.repository:path.includes(paths[endpoint]))
+      return new Response("private-upstream-body-must-not-escape",{status,headers:{
+        "content-type":"text/plain",location:"https://untrusted.invalid/secret",
+        "x-ratelimit-remaining":"0","x-ratelimit-reset":"1792328000",
+        "retry-after":"secret-header-value"}});
+    return normalFetch(input,init);
+  });
+  for(endpoint of ["repository","tag","release"]) for(status of [301,403,429,503]) {
+    const signer=env("signing");calls=0;
+    const rejected=await call("signing",signer,"/v1/sign",{
+      request:prepared.json.request,completion:executed.json.completion});
+    assert.equal(rejected.status,503);
+    assert.deepEqual(rejected.json,{error:"public_readback_unavailable",readback:{
+      endpoint,upstreamStatus:status,rateLimitRemaining:0,rateLimitReset:1792328000,retryAfterSeconds:null}});
+    assert.equal(calls,["repository","tag","release"].indexOf(endpoint)+1);
+    assert.equal(signer.ledger.size,0);assert.equal(api.mutationCount,1);
+    assert(!JSON.stringify(rejected.json).includes("secret"));
+    assert(!JSON.stringify(rejected.json).includes("private-upstream"));
+  }
+});

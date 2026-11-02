@@ -1,5 +1,13 @@
 # Current status
 
+## Current release recovery checkpoint — 20 October 2026
+
+The last retained live evidence is one publication of disposable release `416342082` by run [39124373253](https://github.com/AyobamiH/agentproof-release-canary/actions/runs/39124373253) at `2026-10-18T11:43:37Z`. Receipt readback failed; attempts 2 and 3 made zero publication requests. Original completion freshness expired at `2026-10-18T11:53:38.649Z`. No release receipt, independent OpsTruth release decision or DoneState terminal VERIFIED is established. The 18 October checkpoint records all four temporary services disabled with the same keys and namespaces; it is historical closure evidence, not a new health observation.
+
+The accepted next step is deterministic Durable Object recovery with persisted alarms/retry state and a fresh authority-signed readback sidecar bound to the original completion. Pi Durable / PiHarness remains deferred. See the [20 October decision](DECISION-LOG.md), [canonical AGENTPROOF-001 ledger](https://github.com/AyobamiH/donestate/blob/main/docs/PROJECT-STATE.md) and [hash-bound recovery checkpoint](https://github.com/AyobamiH/donestate/blob/main/docs/evidence/agentproof-release-recovery-checkpoint-20261020.json). The local implementation passed the AgentProof root checks (76 core tests and 20 script tests), 21 isolated provider tests and an actual Workers-runtime private-entrypoint check. These are local engineering results; protected source review, deployment and an independently verified live outcome remain pending. The source/check evidence is retained in the [local validation checkpoint](https://github.com/AyobamiH/donestate/blob/main/docs/evidence/agentproof-release-recovery-source-checkpoint-20261020.json).
+
+Published npm RC6 remains immutable and supports the repository-patch capability. Later release-service work is not inside that tarball. Independent adoption remains a separate gate with zero qualifying observations in the retained checkpoint. Dated entries below describe their historical stage; this current synopsis supersedes their earlier pending-publication statements.
+
 Lifecycle-contract implementation merge: `2ec72f15a50881104ad03d92cde133d7a2351685`
 
 ## Release history
@@ -11,7 +19,7 @@ Lifecycle-contract implementation merge: `2ec72f15a50881104ad03d92cde133d7a23516
 - **RC5 (`0.1.0-rc.5`):** standalone source, tag, GitHub prerelease, and packaged tarball are published at `github.com/AyobamiH/agentproof`. Fresh registry readback on 7 October 2026 also confirms RC5 npm publication. The registry tarball is byte-for-byte identical to the GitHub RC5 asset, its registry signature verifies, and a clean consumer completed the development repository-patch lifecycle. This correction records existing publication; it does not perform a new publication or change the RC5 tag.
 - **RC6 (`0.1.0-rc.6`):** published on GitHub and npm from source commit `a0ee17a70d05bc3c339c0c15be6bb38b4517771a`. The GitHub, staged, and registry tarballs are byte-for-byte identical with SHA-256 `f9dd7eb65f5809c69584624272c0c7dc13a84209c4a2daee338dfee43f5050ca`; npm records integrity `sha512-+PoO/Q2su6AreygVjMzmeVQEA/+H2/LXVHqNw+ttVh/n+7m0tl52j3JiEm3tj2fo36sJq20mzEhEsnvub8tRFA==`. A fresh registry installation passed the CLI, SDK, development-authority export, schema, and registry-signature checks. `next` points to RC6 while `latest` remains RC5. See [RC6 registry reconciliation](evidence/npm-rc6-registry-reconciliation.md).
 
-## Supported capability
+## Published RC6 supported capability
 
 Only `agentproof.repository_patch.v1`: an allowlisted patch against an exact clean local Git repository. It does not commit, push, tag, deploy, migrate, or access remotes.
 
@@ -19,7 +27,7 @@ Only `agentproof.repository_patch.v1`: an allowlisted patch against an exact cle
 
 The package is ESM-only and requires Node.js 22.5+, Git, and a local filesystem. Linux, macOS, and WSL2 are assumed; native Windows is unvalidated. Published RC6 state/signing are local. The current source adds optional external-provider clients, and a narrowly scoped hosted provider canary. No general-purpose authority, KMS/HSM custody, OS-enforced executor sandbox, hosted coordinator product, or distributed atomic commit is established. Explicit signer pinning is required. Development authority is not production authority.
 
-## Active gate
+## Distribution gate and historical integration baseline
 
 RC6's distribution gate is complete. GitHub created the exact release artifact,
 an authenticated publisher staged those bytes, the maintainer approved the stage
@@ -163,3 +171,29 @@ policy are unchanged. The independently verified repository-patch run
 [39121692291](https://github.com/AyobamiH/agentproof/actions/runs/39121692291)
 remains evidence for `d89f6d54709830ff49373ab7c2797c927ced8ac9`.
 RC6 npm publication is unchanged; independent-installation credit remains zero.
+
+
+## Published consequence; independent receipt pending — 18 October 2026
+
+The current-main repository-patch canary [39124046639](https://github.com/AyobamiH/agentproof/actions/runs/39124046639)
+passed all 17 checks at `74c12b4e42c8109d34e4764fa0e4864513cab4a9`.
+Protected release run [39124373253](https://github.com/AyobamiH/agentproof-release-canary/actions/runs/39124373253)
+then published the existing disposable release `416342082` once at `2026-10-18T11:43:37Z`.
+The exact successful GitHub response and signed execution completion are retained.
+Attempts 2 and 3 made zero publication requests and returned the identical completion.
+
+The separate receipt signer refused its public GitHub readback on all three attempts.
+No AgentProof receipt, independent OpsTruth verdict, or DoneState VERIFIED outcome is
+claimed. This change adds only bounded endpoint/status/rate-limit metadata to that
+refusal. Upstream bodies, URLs, arbitrary headers and credentials are never returned.
+The permanent fence, keys, original workflow identity and historical evidence remain
+unchanged. Further recovery must diagnose the upstream refusal and may only observe
+and sign the existing consequence; it must never publish again.
+
+## Native Cloudflare CI continuation — 21 October 2026
+
+Three isolated Pages projects are provisioned and their identity/configuration readback passed: `proof-state-ci-agentproof`, `proof-state-ci-donestate`, and `proof-state-ci-opstruth`. The inspected projects have zero deployments and automatic production/preview builds disabled. The previous session's administrative scripts and provisioning receipts survived on the owner host, but its runner was not present on the recovery branches. The portable runner, explicit manifests and failure tests are now preserved alongside source rather than treated as an already-delivered result.
+
+The selected route is native Pages build execution with a static, exact-source engineering receipt and the native Cloudflare GitHub check. No GitHub runner or owner-machine process is required to execute an accepted build. No Container, plan upgrade, production binding or secret is supplied to fixture execution. Node 22.23.3 and 24.22.0 archives are SHA-256 pinned. Real native execution, trusted check-provider policy migration and release recovery acceptance remain distinct pending gates. The separate AgentProof macOS requirement is preserved. Original release publication remains one; no release workflow is rerun.
+
+See `ci/cloudflare/README.md` and `ci/cloudflare/manifest.json`. The owner authorised implementation and the Cloudflare CI integration on 20 October and continuation on 21 October. Provider-policy changes require genuine exact-head native results before replacing the old check source; no green status is copied or fabricated. PiHarness remains deferred.
