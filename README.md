@@ -220,3 +220,7 @@ The [eight-case, credential-free release-uncertainty reproduction](docs/research
 ## Licence
 
 AgentProof and the files distributed in this package are licensed under the Apache License 2.0. This package-scoped licence does not change the licensing of unrelated directories in the parent OpenClaw Operator repository.
+
+## Agent contributors
+
+Start with [AGENTS.md](AGENTS.md) for repository-owned skills, knowledge and required scope review.
