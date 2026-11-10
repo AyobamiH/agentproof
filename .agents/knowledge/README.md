@@ -12,7 +12,7 @@ Preserve transaction-bound approvals, explicit signer pins, single-use execution
 
 ## Setup and validation
 
-[CONTRIBUTING.md](../../CONTRIBUTING.md) specifies `npm ci`, `npm run typecheck`, `npm test`, `npm run pack:audit` and `git diff --check`. [package.json](../../package.json) requires Node.js 22.5+ and additionally defines `npm run docs:check` and `npm run check`. Foundation-only validation is `python3 .agents/validate_foundations.py` (Python 3 standard library). Publication still follows [the npm release procedure](../../docs/NPM-RELEASE.md).
+[CONTRIBUTING.md](../../CONTRIBUTING.md) specifies `npm ci`, `npm run typecheck`, `npm test`, `npm run pack:audit` and `git diff --check`. [package.json](../../package.json) requires Node.js 22.5+ and additionally defines `npm run docs:check` and `npm run check`. Foundation-only validation is `python3 .agents/validate_foundations.py` (Python 3.9+ standard library). Publication still follows [the npm release procedure](../../docs/NPM-RELEASE.md).
 
 ## Existing lessons
 
